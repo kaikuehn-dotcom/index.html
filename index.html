@@ -10,30 +10,37 @@
 
 <style>
 :root{
-  --bg:#f4f6f8;
+  --bg:#f3f6fb;
   --card:#ffffff;
   --accent:#2563eb;
+  --accentSoft:#e8efff;
   --best:#e9fbf0;
-  --border:#dcdfe4;
+  --bestBorder:#16a34a;
+  --border:#d7dbe3;
   --input:#eef2ff;
+  --muted:#94a3b8;
 }
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  background:var(--bg);
+  background:linear-gradient(180deg,#f3f6fb,#eef2f7);
+  color:#0f172a;
 }
 .app{
-  max-width:900px;
+  max-width:920px;
   margin:auto;
   padding:16px;
 }
-h1{font-size:22px;margin:10px 0 14px}
+h1{
+  font-size:22px;
+  margin:12px 0 16px;
+}
 .card{
   background:var(--card);
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 6px 20px rgba(15,23,42,.08);
 }
 label{
   display:block;
@@ -45,48 +52,84 @@ input,select{
   width:100%;
   padding:12px;
   font-size:16px;
-  border-radius:10px;
+  border-radius:12px;
   border:2px solid var(--input);
+  background:#fff;
 }
 input:focus,select:focus{
   outline:none;
   border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accentSoft);
 }
-.grid{display:grid;gap:12px}
-@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+input.inactive{
+  background:#f8fafc;
+  color:#94a3b8;
+}
+.grid{
+  display:grid;
+  gap:12px;
+}
+@media(min-width:760px){
+  .grid{grid-template-columns:1fr 1fr;}
+}
+
+/* Toggle */
 .toggle{
   display:flex;
+  background:#e5e9f2;
   border-radius:999px;
-  overflow:hidden;
-  border:2px solid var(--input);
+  padding:4px;
 }
 .toggle button{
   flex:1;
+  border:none;
   padding:10px;
   font-size:14px;
-  font-weight:700;
-  border:none;
-  background:#fff;
+  font-weight:800;
+  border-radius:999px;
+  background:transparent;
+  color:#334155;
 }
 .toggle button.active{
   background:var(--accent);
   color:#fff;
 }
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:right}
+
+/* Table */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:right;
+}
 th:first-child,td:first-child{text-align:left}
-tr.best{background:var(--best)}
+tr.best{
+  background:var(--best);
+}
 .badge{
   display:inline-block;
   background:#16a34a;
   color:#fff;
   font-size:12px;
-  padding:4px 8px;
+  padding:4px 10px;
   border-radius:999px;
   margin-left:6px;
 }
-.small{font-size:12px;color:#555}
-.top-best{border:2px solid #16a34a}
+
+/* Best card */
+.top-best{
+  border:2px solid var(--bestBorder);
+  background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
+}
+
+.small{
+  font-size:12px;
+  color:#475569;
+}
 </style>
 </head>
 
@@ -95,145 +138,4 @@ tr.best{background:var(--best)}
 
 <select id="lang">
   <option value="de">Deutsch</option>
-  <option value="en">English</option>
-  <option value="pt">Português</option>
-</select>
-
-<h1 id="title"></h1>
-
-<!-- MODUS -->
-<div class="card">
-  <div class="toggle">
-    <button id="modeBRL" class="active">BRL abheben</button>
-    <button id="modeEUR">EUR Budget</button>
-  </div>
-
-  <div class="grid" style="margin-top:12px">
-    <div id="brlBox">
-      <label id="lblBRL"></label>
-      <input id="netBRL" type="number" value="5000">
-    </div>
-    <div id="eurBox" style="display:none">
-      <label id="lblEUR"></label>
-      <input id="eurBudget" type="number" value="1000">
-    </div>
-  </div>
-</div>
-
-<!-- OPTIONEN -->
-<div id="optionInputs"></div>
-
-<!-- BESTE OPTION -->
-<div class="card top-best">
-  <h2>🏆 <span id="bestTitle"></span></h2>
-  <div id="bestText"></div>
-</div>
-
-<!-- TABELLE -->
-<div class="card">
-<table>
-<thead>
-<tr>
-  <th id="tOption"></th>
-  <th id="tWithdrawals"></th>
-  <th id="tMain"></th>
-  <th id="tEff"></th>
-</tr>
-</thead>
-<tbody id="results"></tbody>
-</table>
-</div>
-
-<p class="small" id="footer"></p>
-
-</div>
-
-<script>
-const TEXT={
-de:{title:"BRL ↔ EUR Abhebungs-Vergleich",brl:"Netto BRL gewünscht",eur:"EUR Budget verfügbar",opt:"Option",with:"Abhebungen",mainA:"EUR nötig",mainB:"BRL netto",eff:"Effektiver Kurs",best:"Beste Option",footer:"Automatisch sortiert (best → worst)"},
-en:{title:"BRL ↔ EUR Withdrawal Comparison",brl:"Net BRL desired",eur:"EUR budget available",opt:"Option",with:"Withdrawals",mainA:"EUR needed",mainB:"BRL net",eff:"Effective rate",best:"Best option",footer:"Automatically sorted (best → worst)"},
-pt:{title:"Comparação de Saque BRL ↔ EUR",brl:"BRL líquido desejado",eur:"Orçamento em EUR",opt:"Opção",with:"Saques",mainA:"EUR necessário",mainB:"BRL líquido",eff:"Câmbio efetivo",best:"Melhor opção",footer:"Ordenado automaticamente (melhor → pior)"}
-};
-
-const OPTIONS=[
- {name:"N26 ATM",rate:6.36,atm:25,limit:2500,pct:1.7},
- {name:"Wise",rate:6.20,atm:0,limit:999999,pct:0}
-];
-
-let mode="BRL";
-
-function ui(){
- const l=lang.value;
- title.innerText=TEXT[l].title;
- lblBRL.innerText=TEXT[l].brl;
- lblEUR.innerText=TEXT[l].eur;
- tOption.innerText=TEXT[l].opt;
- tWithdrawals.innerText=TEXT[l].with;
- tMain.innerText=mode==="BRL"?TEXT[l].mainA:TEXT[l].mainB;
- tEff.innerText=TEXT[l].eff;
- bestTitle.innerText=TEXT[l].best;
- footer.innerText=TEXT[l].footer;
-}
-
-function renderOptions(){
- optionInputs.innerHTML="";
- OPTIONS.forEach((o,i)=>{
-  optionInputs.innerHTML+=`
-   <div class="card">
-    <b>${o.name}</b>
-    <div class="grid">
-      <div><label>Kurs</label><input type="number" value="${o.rate}" oninput="OPTIONS[${i}].rate=this.value;calc()"></div>
-      <div><label>Bank %</label><input type="number" value="${o.pct}" ${o.name==="Wise"?"disabled":""} oninput="OPTIONS[${i}].pct=this.value;calc()"></div>
-      <div><label>ATM Gebühr</label><input type="number" value="${o.atm}" oninput="OPTIONS[${i}].atm=this.value;calc()"></div>
-      <div><label>ATM Limit</label><input type="number" value="${o.limit}" oninput="OPTIONS[${i}].limit=this.value;calc()"></div>
-    </div>
-   </div>`;
- });
-}
-
-function calc(){
- const rows=OPTIONS.map(o=>{
-  const rate=+o.rate,atm=+o.atm,limit=+o.limit,pct=+o.pct;
-  let n,main,eff;
-  if(mode==="BRL"){
-    const net=+netBRL.value;
-    n=Math.ceil(net/limit);
-    main=((net+n*atm)/rate)*(1+pct/100);
-    eff=net/main;
-  }else{
-    const eur=+eurBudget.value;
-    const base=eur/(1+pct/100);
-    let best=0,bestN=1;
-    for(let i=1;i<=20;i++){
-      const brl=Math.min(i*limit,base*rate-i*atm);
-      if(brl>best){best=brl;bestN=i;}
-    }
-    n=bestN;main=best;eff=best/eur;
-  }
-  return{name:o.name,n,main,eff};
- }).sort((a,b)=>b.eff-a.eff);
-
- results.innerHTML="";
- rows.forEach((r,i)=>{
-  results.innerHTML+=`
-   <tr class="${i===0?"best":""}">
-    <td>${r.name}${i===0?'<span class="badge">BEST</span>':""}</td>
-    <td>${r.n}</td>
-    <td>${mode==="BRL"?r.main.toFixed(2)+" EUR":Math.round(r.main)+" BRL"}</td>
-    <td>${r.eff.toFixed(3)}</td>
-   </tr>`;
- });
-
- const b=rows[0];
- bestText.innerHTML=`<b>${b.name}</b><br>${TEXT[lang.value].with}: ${b.n}<br>${mode==="BRL"?TEXT[lang.value].mainA:TEXT[lang.value].mainB}: ${mode==="BRL"?b.main.toFixed(2)+" EUR":Math.round(b.main)+" BRL"}`;
-}
-
-modeBRL.onclick=()=>{mode="BRL";modeBRL.classList.add("active");modeEUR.classList.remove("active");brlBox.style.display="block";eurBox.style.display="none";ui();calc()};
-modeEUR.onclick=()=>{mode="EUR";modeEUR.classList.add("active");modeBRL.classList.remove("active");brlBox.style.display="none";eurBox.style.display="block";ui();calc()};
-lang.onchange=()=>{ui();calc()};
-
-ui();renderOptions();calc();
-</script>
-
-</body>
-</html>
+  <option value="e
