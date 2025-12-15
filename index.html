@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BRL↔EUR</title>
 
-  <!-- iPhone / Home Screen basics (icon comes next step) -->
+  <!-- iPhone / Home Screen -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="BRL↔EUR">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <!-- later: add icon files in repo root -->
+
+  <!-- Icons (upload these files into your GitHub repo root) -->
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" sizes="192x192" href="icon-192.png">
+  <link rel="icon" sizes="512x512" href="icon-512.png">
 
   <style>
     :root{
@@ -132,22 +134,13 @@
       padding:10px;border-radius:12px;border:1px solid var(--border);
       background:#f8fafc;
     }
-    .warn{
-      background:var(--warnBg);
-      border:1px solid #fed7aa;
-      color:var(--warnText);
-      padding:10px 12px;
-      border-radius:12px;
-      font-size:12px;
-      font-weight:850;
-    }
   </style>
 </head>
 
 <body>
 <div class="app">
   <div class="topbar">
-    <h1 id="title">BRL↔EUR – günstigster Zahlungsweg</h1>
+    <h1 id="title">BRL↔EUR</h1>
     <select id="lang" style="max-width:220px" aria-label="Language">
       <option value="de">Deutsch</option>
       <option value="en">English</option>
@@ -180,6 +173,18 @@
       <span class="pill" id="atmPill"></span>
       <span id="atmPillText"></span>
     </div>
+  </div>
+
+  <!-- iOS Home Screen helper (shows only on iPhone Safari when not already installed) -->
+  <div class="card" id="iosInstallCard" style="display:none">
+    <div class="rowTop">
+      <div>
+        <b id="iosInstallTitle"></b>
+        <div class="small" id="iosInstallSub"></div>
+      </div>
+      <button class="btn btnPrimary" id="iosInstallBtn"></button>
+    </div>
+    <div class="small" id="iosInstallText" style="margin-top:10px; display:none"></div>
   </div>
 
   <!-- OPTIONS HEADER -->
@@ -221,7 +226,7 @@
   </div>
 
   <!-- RESET -->
-  <div class="card" style="text-align:center; opacity:.75">
+  <div class="card" style="text-align:center; opacity:.85">
     <button id="resetApp" class="btn btnDanger"></button>
     <div class="small" id="resetHint" style="margin-top:8px"></div>
   </div>
@@ -229,8 +234,34 @@
 
 <script>
 /* =========================
+   Small utilities
+========================= */
+const $ = (id)=>document.getElementById(id);
+function num(v, fallback=0){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+function clampMin(v, min){ return v < min ? min : v; }
+function fmt2(n){ return Number.isFinite(n) ? n.toFixed(2) : "–"; }
+function fmt0(n){ return Number.isFinite(n) ? String(Math.round(n)) : "–"; }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+function uuid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  // fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+/* =========================
    i18n
 ========================= */
+let state; // declared early for t()
+
 const I18N = {
   de: {
     title: "BRL↔EUR – günstigster Zahlungsweg in €",
@@ -240,8 +271,8 @@ const I18N = {
     lblEUR_pay: "EUR Betrag (wird berechnet)",
     lblBRL_have: "BRL Betrag (wird berechnet)",
     lblEUR_have: "EUR Betrag (z. B. 150)",
-    hint_pay: "Du gibst den BRL-Betrag ein – ich berechne, welcher Zahlungsweg dich am wenigsten EUR kostet (Best→Worst).",
-    hint_have: "Du gibst den EUR-Betrag ein – ich berechne, womit du am meisten BRL bekommst (Best→Worst).",
+    hint_pay: "Du gibst den BRL-Betrag ein – ich ranke Best→Worst nach den niedrigsten EUR-Kosten.",
+    hint_have: "Du gibst den EUR-Betrag ein – ich ranke Best→Worst nach dem höchsten BRL-Ergebnis. ",
     atmPill: "ATM-Limit Standard: 2.500 BRL",
     atmPillText: " → ATM-Gebühr fällt pro Abhebung an (mehrfach), Bank-% nur einmal.",
     waysTitle: "Deine Zahlungswege",
@@ -254,8 +285,8 @@ const I18N = {
     thResult_have: "BRL verfügbar",
     thEffective_pay: "Effektiv (BRL/EUR)",
     thEffective_have: "Effektiv (BRL/EUR)",
-    note_pay: "Vergleich: Für deinen BRL-Betrag → welche Option kostet dich am wenigsten EUR?",
-    note_have: "Vergleich: Für deinen EUR-Betrag → womit bekommst du am meisten BRL?",
+    note_pay: "Für deinen BRL-Betrag: Welche Option kostet dich am wenigsten EUR?",
+    note_have: "Für deinen EUR-Betrag: Mit welcher Option bekommst du am meisten BRL?",
     best_costFor: "Kosten für",
     best_is: "sind",
     best_for: "Für",
@@ -278,27 +309,31 @@ const I18N = {
     optAtmLimit: "ATM Limit pro Abhebung (BRL)",
     optFx: "FX-Gebühr Kreditkarte (%)",
     optHintCard: "Karte: EUR = BRL ÷ Kurs × (1+Bank%) × (1+FX)",
-    optInfo_atm: "ATM: Limit & Abhebungsgebühr pro Abhebung (z. B. 5.000 BRL → 2 Abhebungen).",
+    optInfo_atm: "ATM: Limit & Gebühr pro Abhebung (z. B. 5.000 BRL → 2 Abhebungen).",
     optInfo_card: "Kreditkarte bleibt im Vergleich – inklusive FX-Gebühr.",
     optInfo_transfer: "Transfer/Wise: keine Abhebungen/ATM-Gebühren, nur Kurs + Gebühren.",
     mustKeepOne: "Mindestens 1 Zahlungsweg muss bleiben.",
     reset: "🔄 Alles zurücksetzen",
     resetHint: "Setzt Werte, Optionen & Sprache zurück (alle gespeicherten Daten werden gelöscht).",
-    resetConfirm: "Willst du wirklich alles zurücksetzen?\nAlle gespeicherten Werte gehen verloren."
+    resetConfirm: "Willst du wirklich alles zurücksetzen?\nAlle gespeicherten Werte gehen verloren.",
+    iosTitle: "📲 Auf iPhone-Homescreen hinzufügen",
+    iosSub: "Dann läuft der Rechner wie eine App – schnell & bequem.",
+    iosBtn: "Anleitung",
+    iosSteps: "1) Tippe unten auf <b>Teilen</b> (Quadrat mit Pfeil).<br>2) Wähle <b>Zum Home-Bildschirm</b>.<br>3) Name prüfen → <b>Hinzufügen</b>."
   },
   en: {
-    title: "BRL↔EUR – cheapest payment route in €",
+    title: "BRL↔EUR – cheapest route in €",
     mPayBRL: "I need to pay BRL",
     mHaveEUR: "I have EUR left",
     lblBRL_pay: "BRL amount (e.g. 360)",
     lblEUR_pay: "EUR amount (calculated)",
     lblBRL_have: "BRL amount (calculated)",
     lblEUR_have: "EUR amount (e.g. 150)",
-    hint_pay: "Enter the BRL amount — I’ll rank routes by lowest EUR cost (best→worst).",
-    hint_have: "Enter the EUR amount — I’ll rank routes by most BRL received (best→worst).",
+    hint_pay: "Enter BRL — ranked best→worst by lowest EUR cost.",
+    hint_have: "Enter EUR — ranked best→worst by most BRL received.",
     atmPill: "ATM limit default: 2,500 BRL",
-    atmPillText: " → ATM fee is charged per withdrawal (multiple times), bank % only once.",
-    waysTitle: "Your payment routes",
+    atmPillText: " → ATM fee per withdrawal (multiple times), bank % only once.",
+    waysTitle: "Your routes",
     waysSubtitle: "ATM / transfer / credit card — all in one comparison.",
     addOption: "+ Add route",
     bestTitle: "🏆 Best option",
@@ -308,8 +343,8 @@ const I18N = {
     thResult_have: "BRL received",
     thEffective_pay: "Effective (BRL/EUR)",
     thEffective_have: "Effective (BRL/EUR)",
-    note_pay: "Comparison: for your BRL amount → which route costs the least EUR?",
-    note_have: "Comparison: for your EUR amount → which route yields the most BRL?",
+    note_pay: "For your BRL amount: which route costs the least EUR?",
+    note_have: "For your EUR amount: which route yields the most BRL?",
     best_costFor: "Cost for",
     best_is: "is",
     best_for: "For",
@@ -338,7 +373,11 @@ const I18N = {
     mustKeepOne: "At least 1 route must remain.",
     reset: "🔄 Reset everything",
     resetHint: "Resets values, routes & language (clears all saved data).",
-    resetConfirm: "Do you really want to reset everything?\nAll saved data will be lost."
+    resetConfirm: "Do you really want to reset everything?\nAll saved data will be lost.",
+    iosTitle: "📲 Add to iPhone Home Screen",
+    iosSub: "Then it runs like an app — fast & handy.",
+    iosBtn: "How to",
+    iosSteps: "1) Tap <b>Share</b> (square with arrow).<br>2) Choose <b>Add to Home Screen</b>.<br>3) Confirm the name → <b>Add</b>."
   },
   pt: {
     title: "BRL↔EUR – rota mais barata em €",
@@ -348,11 +387,11 @@ const I18N = {
     lblEUR_pay: "Valor em EUR (calculado)",
     lblBRL_have: "Valor em BRL (calculado)",
     lblEUR_have: "Valor em EUR (ex.: 150)",
-    hint_pay: "Digite o valor em BRL — eu ranqueio pelo menor custo em EUR (melhor→pior).",
-    hint_have: "Digite o valor em EUR — eu ranqueio por mais BRL recebido (melhor→pior).",
+    hint_pay: "Digite BRL — ranking melhor→pior pelo menor custo em EUR.",
+    hint_have: "Digite EUR — ranking melhor→pior pelo maior BRL recebido.",
     atmPill: "Limite padrão do ATM: 2.500 BRL",
     atmPillText: " → taxa do ATM por saque (várias vezes), % do banco só 1 vez.",
-    waysTitle: "Suas rotas de pagamento",
+    waysTitle: "Suas rotas",
     waysSubtitle: "ATM / transferência / cartão — tudo no mesmo comparativo.",
     addOption: "+ Adicionar rota",
     bestTitle: "🏆 Melhor opção",
@@ -362,8 +401,8 @@ const I18N = {
     thResult_have: "BRL recebido",
     thEffective_pay: "Efetivo (BRL/EUR)",
     thEffective_have: "Efetivo (BRL/EUR)",
-    note_pay: "Comparação: para seu valor em BRL → qual rota custa menos EUR?",
-    note_have: "Comparação: para seu valor em EUR → qual rota rende mais BRL?",
+    note_pay: "Para seu BRL: qual rota custa menos EUR?",
+    note_have: "Para seu EUR: qual rota rende mais BRL?",
     best_costFor: "Custo para",
     best_is: "é",
     best_for: "Para",
@@ -392,33 +431,37 @@ const I18N = {
     mustKeepOne: "Pelo menos 1 rota deve permanecer.",
     reset: "🔄 Redefinir tudo",
     resetHint: "Redefine valores, rotas e idioma (apaga dados salvos).",
-    resetConfirm: "Deseja realmente redefinir tudo?\nTodos os dados salvos serão apagados."
+    resetConfirm: "Deseja realmente redefinir tudo?\nTodos os dados salvos serão apagados.",
+    iosTitle: "📲 Adicionar à Tela de Início (iPhone)",
+    iosSub: "Aí funciona como um app — rápido e prático.",
+    iosBtn: "Como fazer",
+    iosSteps: "1) Toque em <b>Compartilhar</b> (quadrado com seta).<br>2) Escolha <b>Adicionar à Tela de Início</b>.<br>3) Confirme o nome → <b>Adicionar</b>."
   }
 };
 function t(key){
-  const lang = state.lang || "de";
+  const lang = state?.lang || "de";
   const pack = I18N[lang] || I18N.de;
-  return pack[key] ?? I18N.de[key] ?? key;
+  return (pack[key] ?? I18N.de[key] ?? key);
 }
 
 /* =========================
    Storage / Defaults
 ========================= */
-const STORE_KEY = "brl_eur_bestway_full_v1";
+const STORE_KEY = "brl_eur_bestway_FINAL_v1";
 
 const DEFAULT_STATE = {
   lang: "de",
   mode: "pay_brl", // pay_brl | have_eur
   brl: 360,
-  eur: 0,
+  eur: 150,
   options: [
-    { id: crypto.randomUUID(), name: "N26 · ATM", type: "atm", favorite: true,  rate: 6.36, bankPct: 1.70, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 25, atmLimitBRL: 2500, cardFxPct: 0 },
-    { id: crypto.randomUUID(), name: "Wise",      type: "transfer", favorite: false, rate: 6.20, bankPct: 0.00, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 0,  atmLimitBRL: 999999999, cardFxPct: 0 },
-    { id: crypto.randomUUID(), name: "Kreditkarte", type: "card", favorite: false, rate: 6.30, bankPct: 0.00, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 0,  atmLimitBRL: 999999999, cardFxPct: 1.55 }
+    { id: uuid(), name: "N26 · ATM",      type: "atm",      favorite: true,  rate: 6.36, bankPct: 1.70, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 25, atmLimitBRL: 2500,      cardFxPct: 0 },
+    { id: uuid(), name: "Wise",           type: "transfer", favorite: false, rate: 6.20, bankPct: 0.00, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 0,  atmLimitBRL: 999999999, cardFxPct: 0 },
+    { id: uuid(), name: "Kreditkarte",    type: "card",     favorite: false, rate: 6.30, bankPct: 0.00, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 0,  atmLimitBRL: 999999999, cardFxPct: 1.55 }
   ]
 };
 
-let state = structuredClone(DEFAULT_STATE);
+state = clone(DEFAULT_STATE);
 
 function loadState(){
   try{
@@ -427,12 +470,11 @@ function loadState(){
     const parsed = JSON.parse(raw);
     if(!parsed || !Array.isArray(parsed.options)) return;
 
-    // minimal validation/merge
     state = {
-      ...structuredClone(DEFAULT_STATE),
+      ...clone(DEFAULT_STATE),
       ...parsed,
       options: parsed.options.map(o => ({
-        id: o.id || crypto.randomUUID(),
+        id: o.id || uuid(),
         name: String(o.name ?? "Option"),
         type: (["atm","transfer","card"].includes(o.type) ? o.type : "atm"),
         favorite: !!o.favorite,
@@ -446,7 +488,6 @@ function loadState(){
       }))
     };
 
-    // ensure exactly one favorite if any exist
     if(!state.options.some(o=>o.favorite) && state.options.length){
       state.options[0].favorite = true;
     }
@@ -458,24 +499,7 @@ function saveState(){
 loadState();
 
 /* =========================
-   Helpers
-========================= */
-const $ = (id)=>document.getElementById(id);
-function num(v, fallback=0){
-  const n = Number(v);
-  return Number.isFinite(n) ? n : fallback;
-}
-function clampMin(v, min){ return v < min ? min : v; }
-function fmt2(n){ return Number.isFinite(n) ? n.toFixed(2) : "–"; }
-function fmt0(n){ return Number.isFinite(n) ? String(Math.round(n)) : "–"; }
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-}
-
-/* =========================
    Calculations
-   Goal A (pay_brl): compute EUR cost for given BRL
-   Goal B (have_eur): compute BRL received for given EUR budget
 ========================= */
 function computePayBRL(brl, o){
   const rate = num(o.rate, 0);
@@ -520,12 +544,13 @@ function computeHaveEUR(eurBudget, o){
     extraMul = extraMul * (1 + num(o.cardFxPct, 1.55)/100);
   }
 
+  // Transfer / Card: straightforward
   if(o.type !== "atm"){
     const brl = (eurNet * rate) / extraMul - fixedBRL;
     return { brlOut: Math.max(0, brl), withdrawals: 0 };
   }
 
-  // ATM: choose best n withdrawals (1..30) because cap depends on n * limit and fees depend on n
+  // ATM: choose best number of withdrawals (1..30) due to cap and per-withdrawal fee
   const limit = clampMin(num(o.atmLimitBRL, 2500), 1);
   const atmFee = num(o.atmFeeBRL, 0);
 
@@ -547,6 +572,40 @@ function computeHaveEUR(eurBudget, o){
 }
 
 /* =========================
+   iPhone Home Screen helper
+========================= */
+function isIPhoneSafari(){
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+  return isIOS && isSafari;
+}
+function isStandalone(){
+  return (window.navigator.standalone === true) ||
+         (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+}
+function setupIOSInstallCard(){
+  const card = $("iosInstallCard");
+  if(!card) return;
+
+  // show only on iPhone Safari, not already installed
+  if(isIPhoneSafari() && !isStandalone()){
+    card.style.display = "block";
+  } else {
+    card.style.display = "none";
+  }
+}
+function renderIOSInstallTexts(){
+  $("iosInstallTitle").textContent = t("iosTitle");
+  $("iosInstallSub").textContent = t("iosSub");
+  $("iosInstallBtn").textContent = t("iosBtn");
+  // keep text in sync if language changes while open
+  if($("iosInstallText").style.display !== "none"){
+    $("iosInstallText").innerHTML = t("iosSteps");
+  }
+}
+
+/* =========================
    UI text & mode
 ========================= */
 function applyLanguage(){
@@ -563,6 +622,7 @@ function applyLanguage(){
   $("thWithdrawals").textContent = t("thWithdrawals");
   $("resetApp").textContent = t("reset");
   $("resetHint").textContent = t("resetHint");
+  renderIOSInstallTexts();
 }
 
 function setMode(mode){
@@ -585,10 +645,8 @@ function setMode(mode){
     inBRL.classList.remove("inactive");
     inEUR.classList.add("inactive");
 
-    // keep only BRL active
     state.eur = 0;
     inEUR.value = 0;
-
   } else {
     $("lblBRL").textContent = t("lblBRL_have");
     $("lblEUR").textContent = t("lblEUR_have");
@@ -600,7 +658,6 @@ function setMode(mode){
     inBRL.classList.add("inactive");
     inEUR.classList.remove("inactive");
 
-    // keep only EUR active
     state.brl = 0;
     inBRL.value = 0;
   }
@@ -610,12 +667,11 @@ function setMode(mode){
 }
 
 /* =========================
-   Options (editor + add/remove + favorite)
+   Options editor
 ========================= */
 function optionTemplate(o){
   const showATM = (o.type === "atm");
   const showCard = (o.type === "card");
-
   const favClass = o.favorite ? "favOn" : "favOff";
 
   return `
@@ -727,7 +783,7 @@ function renderOptions(){
     q(".opt-type").onchange = (e)=>{
       o.type = e.target.value;
 
-      // user-friendly defaults when switching type
+      // defaults when switching type
       if(o.type === "atm"){
         o.atmLimitBRL = clampMin(num(o.atmLimitBRL, 2500), 1);
         o.atmFeeBRL = num(o.atmFeeBRL, 25);
@@ -745,7 +801,7 @@ function renderOptions(){
       }
 
       saveState();
-      render(); // re-render to show/hide fields
+      render();
     };
 
     q(".opt-rate").oninput = (e)=>{ o.rate = num(e.target.value, o.rate); saveState(); render(); };
@@ -766,7 +822,7 @@ function renderOptions(){
 
 $("addOption").onclick = ()=>{
   state.options.push({
-    id: crypto.randomUUID(),
+    id: uuid(),
     name: state.lang==="en" ? "New option" : state.lang==="pt" ? "Nova opção" : "Neue Option",
     type: "atm",
     favorite: false,
@@ -783,18 +839,18 @@ $("addOption").onclick = ()=>{
 };
 
 /* =========================
-   Render results (Best→Worst) + savings vs 2nd
+   Render (Best→Worst) + savings vs 2nd
 ========================= */
 function render(){
   applyLanguage();
-
-  // sync language selector
   $("lang").value = state.lang || "de";
 
-  // inputs
   const inBRL = $("inBRL");
   const inEUR = $("inEUR");
+  const savingBox = $("savingBox");
+  savingBox.style.display = "none";
 
+  // inputs
   if(state.mode === "pay_brl"){
     inBRL.value = num(state.brl, 0);
     inEUR.value = 0;
@@ -819,9 +875,7 @@ function render(){
   $("tableNote").textContent = state.mode==="pay_brl" ? t("note_pay") : t("note_have");
 
   renderOptions();
-
-  const savingBox = $("savingBox");
-  savingBox.style.display = "none";
+  setupIOSInstallCard();
 
   let rows = [];
   if(state.mode === "pay_brl"){
@@ -830,7 +884,7 @@ function render(){
     rows = state.options.map(o=>{
       const r = computePayBRL(brl, o);
       const eurCost = r.eurCost;
-      const eff = brl / eurCost; // BRL per EUR
+      const eff = brl / eurCost; // BRL per EUR (higher is better)
       return {
         id:o.id, name:o.name, type:o.type, favorite:o.favorite,
         withdrawals: (o.type==="atm" ? r.withdrawals : null),
@@ -839,7 +893,6 @@ function render(){
       };
     }).sort((a,b)=>(b.eff||0)-(a.eff||0));
 
-    // table
     $("resultRows").innerHTML = rows.map((r,i)=>`
       <tr class="${i===0?'best':''}">
         <td>${escapeHtml(r.name)}${r.favorite?' ⭐':''}${i===0?'<span class="badge">BEST</span>':''}</td>
@@ -849,7 +902,6 @@ function render(){
       </tr>
     `).join("");
 
-    // best box
     const bestRow = rows[0];
     $("bestBox").innerHTML = `
       <div><b>${escapeHtml(bestRow.name)}</b></div>
@@ -859,14 +911,12 @@ function render(){
       bestRow.type === "atm" ? t("best_explain_atm") :
       bestRow.type === "card" ? t("best_explain_card") : t("best_explain_transfer");
 
-    // savings vs 2nd
     if(rows.length > 1){
       const saveEUR = rows[1].main - rows[0].main;
       if(Number.isFinite(saveEUR) && saveEUR > 0.00001){
         savingBox.style.display = "block";
-        savingBox.textContent = I18N[state.lang]?.saving_pay
-          ? I18N[state.lang].saving_pay(saveEUR.toFixed(2))
-          : I18N.de.saving_pay(saveEUR.toFixed(2));
+        const pack = I18N[state.lang] || I18N.de;
+        savingBox.textContent = pack.saving_pay(saveEUR.toFixed(2));
       }
     }
 
@@ -907,9 +957,8 @@ function render(){
       const moreBRL = rows[0].main - rows[1].main;
       if(Number.isFinite(moreBRL) && moreBRL > 0.5){
         savingBox.style.display = "block";
-        savingBox.textContent = I18N[state.lang]?.saving_have
-          ? I18N[state.lang].saving_have(String(Math.round(moreBRL)))
-          : I18N.de.saving_have(String(Math.round(moreBRL)));
+        const pack = I18N[state.lang] || I18N.de;
+        savingBox.textContent = pack.saving_have(String(Math.round(moreBRL)));
       }
     }
   }
@@ -942,13 +991,23 @@ $("inEUR").oninput = ()=>{
 };
 
 $("resetApp").onclick = ()=>{
-  const msg = t("resetConfirm");
-  if(!confirm(msg)) return;
+  if(!confirm(t("resetConfirm"))) return;
   localStorage.removeItem(STORE_KEY);
-  state = structuredClone(DEFAULT_STATE);
+  state = clone(DEFAULT_STATE);
   saveState();
-  // force clean UI
+  // keep iOS helper consistent
+  $("iosInstallText").style.display = "none";
   render();
+};
+
+$("iosInstallBtn").onclick = ()=>{
+  const tEl = $("iosInstallText");
+  if(tEl.style.display === "none"){
+    tEl.style.display = "block";
+    tEl.innerHTML = t("iosSteps");
+  } else {
+    tEl.style.display = "none";
+  }
 };
 
 /* =========================
@@ -958,13 +1017,18 @@ function init(){
   if(!["de","en","pt"].includes(state.lang)) state.lang = "de";
   if(!["pay_brl","have_eur"].includes(state.mode)) state.mode = "pay_brl";
 
-  // inputs initial
+  // Make sure exactly one favorite exists
+  if(!state.options.some(o=>o.favorite) && state.options.length){
+    state.options[0].favorite = true;
+  }
+
+  // init inputs
   $("inBRL").value = num(state.brl, 360);
   $("inEUR").value = num(state.eur, 150);
 
-  // mode UI (and render)
   applyLanguage();
-  setMode(state.mode);
+  setupIOSInstallCard();
+  setMode(state.mode); // calls render()
 }
 init();
 </script>
