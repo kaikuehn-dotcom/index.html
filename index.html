@@ -2,9 +2,9 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>BRL ↔ EUR Rechner</title>
+  <title>BRL ↔ EUR Calculator</title>
 
-  <!-- iPhone / Mobile -->
+  <!-- Mobile / iPhone -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="BRL↔EUR">
@@ -13,7 +13,7 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f6f7f9;
+      background: #f4f6f8;
       color: #111;
       font-size: 16px;
     }
@@ -43,7 +43,7 @@
       margin-bottom: 4px;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       font-size: 16px;
@@ -69,10 +69,6 @@
       text-align: left;
     }
 
-    .scroll {
-      overflow-x: auto;
-    }
-
     .small {
       font-size: 12px;
       color: #666;
@@ -81,90 +77,146 @@
 </head>
 
 <body>
-  <div class="app">
+<div class="app">
 
-    <h1>BRL ↔ EUR Rechner</h1>
+  <select id="lang">
+    <option value="de">Deutsch</option>
+    <option value="en">English</option>
+    <option value="pt">Português</option>
+  </select>
 
-    <div class="card">
-      <label>Netto BRL gewünscht</label>
-      <input id="netBRL" type="number" value="2500">
+  <h1 id="title"></h1>
 
-      <label>Oder EUR Budget</label>
-      <input id="eurBudget" type="number" value="0">
-    </div>
+  <div class="card">
+    <label id="lblNet"></label>
+    <input id="netBRL" type="number" value="2500">
 
-    <div class="card">
-      <label>Kurs (1 EUR = X BRL)</label>
-      <input id="rate" type="number" step="0.01" value="6.36">
-
-      <label>ATM-Gebühr pro Abhebung (BRL)</label>
-      <input id="atmFee" type="number" value="25">
-
-      <label>ATM-Limit (BRL)</label>
-      <input id="atmLimit" type="number" value="2500">
-
-      <label>Bankgebühr (%)</label>
-      <input id="bankPct" type="number" step="0.1" value="1.7">
-    </div>
-
-    <div class="card scroll">
-      <table>
-        <tr>
-          <th>Ergebnis</th>
-          <th>Wert</th>
-        </tr>
-        <tr>
-          <td>Abhebungen</td>
-          <td id="withdrawals">–</td>
-        </tr>
-        <tr>
-          <td>EUR benötigt</td>
-          <td id="eurNeeded">–</td>
-        </tr>
-        <tr>
-          <td>Effektiver Kurs</td>
-          <td id="effRate">–</td>
-        </tr>
-      </table>
-    </div>
-
-    <p class="small">
-      Offline nutzbar · Mobile optimiert
-    </p>
-
+    <label id="lblEur"></label>
+    <input id="eurBudget" type="number" value="0">
   </div>
 
+  <div class="card">
+    <label id="lblRate"></label>
+    <input id="rate" type="number" step="0.01" value="6.36">
+
+    <label id="lblAtmFee"></label>
+    <input id="atmFee" type="number" value="25">
+
+    <label id="lblLimit"></label>
+    <input id="atmLimit" type="number" value="2500">
+
+    <label id="lblPct"></label>
+    <input id="bankPct" type="number" step="0.1" value="1.7">
+  </div>
+
+  <div class="card">
+    <table>
+      <tr>
+        <th id="resLabel"></th>
+        <th id="resValue"></th>
+      </tr>
+      <tr>
+        <td id="rWithdrawals"></td>
+        <td id="withdrawals">–</td>
+      </tr>
+      <tr>
+        <td id="rEur"></td>
+        <td id="eurNeeded">–</td>
+      </tr>
+      <tr>
+        <td id="rEff"></td>
+        <td id="effRate">–</td>
+      </tr>
+    </table>
+  </div>
+
+  <p class="small" id="footer"></p>
+
+</div>
+
 <script>
-function calc() {
-  const netBRL = Number(netBRLInput.value);
-  const eurBudget = Number(eurBudgetInput.value);
-  const rate = Number(rateInput.value);
-  const atmFee = Number(atmFeeInput.value);
-  const atmLimit = Number(atmLimitInput.value);
-  const bankPct = Number(bankPctInput.value);
+const T = {
+  de: {
+    title: "BRL ↔ EUR Abhebungsrechner",
+    net: "Netto BRL gewünscht",
+    eur: "ODER EUR Budget",
+    rate: "Wechselkurs (1 EUR = X BRL)",
+    atmFee: "ATM-Gebühr pro Abhebung (BRL)",
+    limit: "ATM-Limit (BRL)",
+    pct: "Bankgebühr (%)",
+    withdrawals: "Anzahl Abhebungen",
+    eurRes: "EUR benötigt",
+    eff: "Effektiver Kurs",
+    footer: "Offline nutzbar · Mobil optimiert"
+  },
+  en: {
+    title: "BRL ↔ EUR Withdrawal Calculator",
+    net: "Net BRL desired",
+    eur: "OR EUR budget",
+    rate: "Exchange rate (1 EUR = X BRL)",
+    atmFee: "ATM fee per withdrawal (BRL)",
+    limit: "ATM limit (BRL)",
+    pct: "Bank fee (%)",
+    withdrawals: "Withdrawals",
+    eurRes: "EUR needed",
+    eff: "Effective rate",
+    footer: "Works offline · Mobile optimized"
+  },
+  pt: {
+    title: "Calculadora de Saque BRL ↔ EUR",
+    net: "BRL líquido desejado",
+    eur: "OU orçamento em EUR",
+    rate: "Câmbio (1 EUR = X BRL)",
+    atmFee: "Taxa do ATM por saque (BRL)",
+    limit: "Limite do ATM (BRL)",
+    pct: "Taxa do banco (%)",
+    withdrawals: "Número de saques",
+    eurRes: "EUR necessário",
+    eff: "Câmbio efetivo",
+    footer: "Funciona offline · Otimizado para celular"
+  }
+};
 
-  if (!rate || !atmLimit) return;
-
-  const targetBRL = netBRL > 0 ? netBRL : eurBudget * rate;
-  const withdrawals = Math.ceil(targetBRL / atmLimit);
-  const feeBRL = withdrawals * atmFee;
-  const eurBase = (targetBRL + feeBRL) / rate;
-  const eurTotal = eurBase * (1 + bankPct / 100);
-  const effRate = targetBRL / eurTotal;
-
-  document.getElementById("withdrawals").innerText = withdrawals;
-  document.getElementById("eurNeeded").innerText = eurTotal.toFixed(2);
-  document.getElementById("effRate").innerText = effRate.toFixed(3);
+function applyLang() {
+  const l = lang.value;
+  title.innerText = T[l].title;
+  lblNet.innerText = T[l].net;
+  lblEur.innerText = T[l].eur;
+  lblRate.innerText = T[l].rate;
+  lblAtmFee.innerText = T[l].atmFee;
+  lblLimit.innerText = T[l].limit;
+  lblPct.innerText = T[l].pct;
+  rWithdrawals.innerText = T[l].withdrawals;
+  rEur.innerText = T[l].eurRes;
+  rEff.innerText = T[l].eff;
+  footer.innerText = T[l].footer;
 }
 
-const netBRLInput = document.getElementById("netBRL");
-const eurBudgetInput = document.getElementById("eurBudget");
-const rateInput = document.getElementById("rate");
-const atmFeeInput = document.getElementById("atmFee");
-const atmLimitInput = document.getElementById("atmLimit");
-const bankPctInput = document.getElementById("bankPct");
+function calc() {
+  const net = +netBRL.value;
+  const rateV = +rate.value;
+  const atm = +atmFee.value;
+  const lim = +atmLimit.value;
+  const pct = +bankPct.value;
 
-document.querySelectorAll("input").forEach(i => i.addEventListener("input", calc));
+  if (!rateV || !lim) return;
+
+  const brl = net;
+  const n = Math.ceil(brl / lim);
+  const eurBase = (brl + n * atm) / rateV;
+  const eur = eurBase * (1 + pct / 100);
+  const eff = brl / eur;
+
+  withdrawals.innerText = n;
+  eurNeeded.innerText = eur.toFixed(2);
+  effRate.innerText = eff.toFixed(3);
+}
+
+document.querySelectorAll("input, select").forEach(e =>
+  e.addEventListener("input", () => { applyLang(); calc(); })
+);
+
+applyLang();
 calc();
 </script>
 
