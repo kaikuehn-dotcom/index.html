@@ -54,7 +54,6 @@ input,select{
   font-size:16px;
   border-radius:12px;
   border:2px solid var(--input);
-  background:#fff;
 }
 input:focus,select:focus{
   outline:none;
@@ -63,7 +62,7 @@ input:focus,select:focus{
 }
 input.inactive{
   background:#f8fafc;
-  color:#94a3b8;
+  color:var(--muted);
 }
 .grid{
   display:grid;
@@ -72,8 +71,6 @@ input.inactive{
 @media(min-width:760px){
   .grid{grid-template-columns:1fr 1fr;}
 }
-
-/* Toggle */
 .toggle{
   display:flex;
   background:#e5e9f2;
@@ -94,8 +91,6 @@ input.inactive{
   background:var(--accent);
   color:#fff;
 }
-
-/* Table */
 table{
   width:100%;
   border-collapse:collapse;
@@ -119,13 +114,10 @@ tr.best{
   border-radius:999px;
   margin-left:6px;
 }
-
-/* Best card */
 .top-best{
   border:2px solid var(--bestBorder);
   background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
 }
-
 .small{
   font-size:12px;
   color:#475569;
@@ -138,4 +130,176 @@ tr.best{
 
 <select id="lang">
   <option value="de">Deutsch</option>
-  <option value="e
+  <option value="en">English</option>
+  <option value="pt">Português</option>
+</select>
+
+<h1 id="title">BRL ↔ EUR Abhebungs-Vergleich</h1>
+
+<!-- MODE -->
+<div class="card">
+  <div class="toggle">
+    <button id="modeBRL" class="active">BRL abheben</button>
+    <button id="modeEUR">EUR Budget</button>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <div>
+      <label id="lblBRL">Netto BRL gewünscht</label>
+      <input id="netBRL" type="number" value="5000">
+    </div>
+    <div>
+      <label id="lblEUR">EUR Budget verfügbar</label>
+      <input id="eurBudget" type="number" value="0" class="inactive">
+    </div>
+  </div>
+
+  <p class="small" id="modeHint">
+    Du gibst an, wie viele BRL du abheben willst.
+  </p>
+</div>
+
+<!-- OPTIONEN -->
+<div id="optionInputs"></div>
+
+<!-- BEST -->
+<div class="card top-best">
+  <h2>🏆 Beste Option</h2>
+  <div id="bestText"></div>
+</div>
+
+<!-- TABLE -->
+<div class="card">
+<table>
+<thead>
+<tr>
+  <th>Option</th>
+  <th>Abhebungen</th>
+  <th id="tMain">EUR nötig</th>
+  <th>Eff. Kurs</th>
+</tr>
+</thead>
+<tbody id="results"></tbody>
+</table>
+</div>
+
+<p class="small">
+Automatisch sortiert (beste Option zuerst)
+</p>
+
+</div>
+
+<script>
+const OPTIONS = [
+  { name:"N26 ATM", rate:6.36, atm:25, limit:2500, pct:1.7 },
+  { name:"Wise",    rate:6.20, atm:0,  limit:999999, pct:0 }
+];
+
+let mode = "BRL";
+
+const optionInputs = document.getElementById("optionInputs");
+const results = document.getElementById("results");
+const bestText = document.getElementById("bestText");
+
+function renderOptions(){
+  optionInputs.innerHTML = "";
+
+  OPTIONS.forEach((o,i)=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <b>${o.name}</b>
+      <div class="grid">
+        <div><label>Kurs</label><input type="number" value="${o.rate}"></div>
+        <div><label>Bank %</label><input type="number" value="${o.pct}" ${o.name==="Wise"?"disabled":""}></div>
+        <div><label>ATM Gebühr</label><input type="number" value="${o.atm}"></div>
+        <div><label>ATM Limit</label><input type="number" value="${o.limit}"></div>
+      </div>
+    `;
+
+    const inputs = card.querySelectorAll("input");
+    inputs[0].oninput = e => { o.rate  = +e.target.value; calc(); };
+    inputs[1].oninput = e => { o.pct   = +e.target.value; calc(); };
+    inputs[2].oninput = e => { o.atm   = +e.target.value; calc(); };
+    inputs[3].oninput = e => { o.limit = +e.target.value; calc(); };
+
+    optionInputs.appendChild(card);
+  });
+}
+
+function calc(){
+  let rows = OPTIONS.map(o=>{
+    let n, main, eff;
+
+    if(mode==="BRL"){
+      const net = +netBRL.value || 0;
+      n = Math.ceil(net / o.limit);
+      main = ((net + n*o.atm) / o.rate) * (1 + o.pct/100);
+      eff = net / main;
+    } else {
+      const eur = +eurBudget.value || 0;
+      const base = eur / (1 + o.pct/100);
+      let best=0, bestN=1;
+      for(let i=1;i<=20;i++){
+        const brl = Math.min(i*o.limit, base*o.rate - i*o.atm);
+        if(brl > best){ best = brl; bestN = i; }
+      }
+      n = bestN;
+      main = best;
+      eff = best / eur;
+    }
+    return { ...o, n, main, eff };
+  }).sort((a,b)=>b.eff-a.eff);
+
+  results.innerHTML = "";
+  rows.forEach((r,i)=>{
+    results.innerHTML += `
+      <tr class="${i===0?'best':''}">
+        <td>${r.name}${i===0?'<span class="badge">BEST</span>':''}</td>
+        <td>${r.n}</td>
+        <td>${mode==="BRL" ? r.main.toFixed(2)+" EUR" : Math.round(r.main)+" BRL"}</td>
+        <td>${r.eff.toFixed(3)}</td>
+      </tr>
+    `;
+  });
+
+  const b = rows[0];
+  bestText.innerHTML = `
+    <b>${b.name}</b><br>
+    Abhebungen: ${b.n}<br>
+    ${mode==="BRL" ? "EUR nötig" : "BRL netto"}: <b>${mode==="BRL"?b.main.toFixed(2)+" EUR":Math.round(b.main)+" BRL"}</b>
+  `;
+}
+
+function switchMode(m){
+  mode = m;
+  if(m==="BRL"){
+    netBRL.value = netBRL.value || 5000;
+    eurBudget.value = 0;
+    eurBudget.classList.add("inactive");
+    netBRL.classList.remove("inactive");
+    tMain.innerText = "EUR nötig";
+    modeHint.innerText = "Du gibst an, wie viele BRL du abheben willst.";
+  } else {
+    eurBudget.value = eurBudget.value || 1000;
+    netBRL.value = 0;
+    netBRL.classList.add("inactive");
+    eurBudget.classList.remove("inactive");
+    tMain.innerText = "BRL netto";
+    modeHint.innerText = "Du gibst an, wie viel EUR du einsetzen willst.";
+  }
+  calc();
+}
+
+modeBRL.onclick = ()=>{ modeBRL.classList.add("active"); modeEUR.classList.remove("active"); switchMode("BRL"); };
+modeEUR.onclick = ()=>{ modeEUR.classList.add("active"); modeBRL.classList.remove("active"); switchMode("EUR"); };
+
+netBRL.oninput = calc;
+eurBudget.oninput = calc;
+
+renderOptions();
+calc();
+</script>
+
+</body>
+</html>
