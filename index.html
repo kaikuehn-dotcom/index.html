@@ -2,112 +2,36 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>BRL ↔ EUR Vergleich</title>
-
+<title>BRL ↔ EUR Rechner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="BRL↔EUR">
-
 <style>
 :root{
-  --bg:#f3f6fb;
-  --card:#ffffff;
-  --accent:#2563eb;
-  --accentSoft:#e8efff;
-  --best:#e9fbf0;
-  --bestBorder:#16a34a;
-  --border:#d7dbe3;
-  --input:#eef2ff;
-  --muted:#94a3b8;
+  --bg:#f3f6fb; --card:#fff; --accent:#2563eb; --accentSoft:#e8efff;
+  --best:#e9fbf0; --bestBorder:#16a34a; --border:#d7dbe3;
+  --input:#eef2ff; --muted:#94a3b8;
 }
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  background:linear-gradient(180deg,#f3f6fb,#eef2f7);
-  color:#0f172a;
-}
-.app{
-  max-width:920px;
-  margin:auto;
-  padding:16px;
-}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:linear-gradient(180deg,#f3f6fb,#eef2f7);color:#0f172a}
+.app{max-width:980px;margin:auto;padding:16px}
 h1{font-size:22px;margin:12px 0 16px}
-.card{
-  background:var(--card);
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
-  box-shadow:0 6px 20px rgba(15,23,42,.08);
-}
-label{
-  display:block;
-  font-size:13px;
-  font-weight:700;
-  margin:10px 0 4px;
-}
-input,select{
-  width:100%;
-  padding:12px;
-  font-size:16px;
-  border-radius:12px;
-  border:2px solid var(--input);
-}
-input:focus,select:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accentSoft);
-}
-input.inactive{
-  background:#f8fafc;
-  color:var(--muted);
-}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px;
+  box-shadow:0 6px 20px rgba(15,23,42,.08)}
+label{font-size:13px;font-weight:700;margin:10px 0 4px;display:block}
+input{width:100%;padding:12px;font-size:16px;border-radius:12px;border:2px solid var(--input)}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}
+input.inactive{background:#f8fafc;color:var(--muted)}
 .grid{display:grid;gap:12px}
 @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
-.toggle{
-  display:flex;
-  background:#e5e9f2;
-  border-radius:999px;
-  padding:4px;
-}
-.toggle button{
-  flex:1;
-  border:none;
-  padding:10px;
-  font-size:14px;
-  font-weight:800;
-  border-radius:999px;
-  background:transparent;
-  color:#334155;
-}
-.toggle button.active{
-  background:var(--accent);
-  color:#fff;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  padding:10px;
-  border-bottom:1px solid var(--border);
-  text-align:right;
-}
+.toggle{display:flex;gap:6px;flex-wrap:wrap}
+.toggle button{flex:1 1 220px;border:none;padding:10px;font-weight:800;
+  border-radius:999px;background:#e5e9f2;cursor:pointer}
+.toggle button.active{background:var(--accent);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:right}
 th:first-child,td:first-child{text-align:left}
 tr.best{background:var(--best)}
-.badge{
-  display:inline-block;
-  background:#16a34a;
-  color:#fff;
-  font-size:12px;
-  padding:4px 10px;
-  border-radius:999px;
-  margin-left:6px;
-}
-.top-best{
-  border:2px solid var(--bestBorder);
-  background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
-}
+.badge{background:#16a34a;color:#fff;font-size:12px;padding:4px 10px;border-radius:999px;margin-left:6px}
+.top-best{border:2px solid var(--bestBorder);background:linear-gradient(135deg,#ecfdf5,#f0fdf4)}
 .small{font-size:12px;color:#475569}
 </style>
 </head>
@@ -115,167 +39,163 @@ tr.best{background:var(--best)}
 <body>
 <div class="app">
 
-<h1>BRL ↔ EUR Abhebungs-Vergleich</h1>
+<h1>BRL ↔ EUR Vergleich (ATM & Kreditkarte)</h1>
 
-<!-- MODE -->
 <div class="card">
   <div class="toggle">
-    <button id="modeBRL" class="active">BRL abheben</button>
-    <button id="modeEUR">EUR Budget</button>
+    <button id="mATM_BRL">ATM · BRL</button>
+    <button id="mATM_EUR">ATM · EUR</button>
+    <button id="mCARD_BRL">Karte · BRL</button>
+    <button id="mCARD_EUR">Karte · EUR</button>
   </div>
 
   <div class="grid" style="margin-top:14px">
     <div>
-      <label>Netto BRL gewünscht</label>
-      <input id="netBRL" type="number" value="5000">
+      <label>BRL</label>
+      <input id="inBRL" type="number">
     </div>
     <div>
-      <label>EUR Budget verfügbar</label>
-      <input id="eurBudget" type="number" value="0" class="inactive">
+      <label>EUR</label>
+      <input id="inEUR" type="number">
     </div>
   </div>
 
-  <p class="small" id="modeHint">
-    Du gibst an, wie viele BRL du abheben willst.
-  </p>
+  <div class="grid" style="margin-top:10px">
+    <div>
+      <label>Kreditkarte FX %</label>
+      <input id="cardFx" type="number" step="0.01">
+    </div>
+    <div class="small" style="padding-top:26px">
+      Nur bei Kreditkarte relevant
+    </div>
+  </div>
+
+  <p class="small" id="hint"></p>
 </div>
 
-<!-- OPTIONEN -->
-<div id="optionInputs"></div>
+<div id="opts"></div>
 
-<!-- BEST -->
 <div class="card top-best">
   <h2>🏆 Beste Option</h2>
-  <div id="bestText"></div>
+  <div id="best"></div>
 </div>
 
-<!-- TABLE -->
 <div class="card">
 <table>
-<thead>
-<tr>
-  <th>Option</th>
-  <th>Abhebungen</th>
-  <th id="tMain">EUR nötig</th>
-  <th>Eff. Kurs</th>
-</tr>
-</thead>
-<tbody id="results"></tbody>
+<thead><tr><th>Option</th><th>Ergebnis</th><th>Eff. Kurs</th></tr></thead>
+<tbody id="rows"></tbody>
 </table>
 </div>
-
-<p class="small">
-Automatisch sortiert (beste Option zuerst)
-</p>
 
 </div>
 
 <script>
-const OPTIONS = [
-  { name:"N26 ATM", rate:6.36, atm:25, limit:2500, pct:1.7 },
-  { name:"Wise",    rate:6.20, atm:0,  limit:999999, pct:0 }
-];
+const STORAGE_KEY="brl_eur_calc_v1";
 
-let mode = "BRL";
+let state={
+  mode:"ATM_BRL",
+  brl:5000,
+  eur:0,
+  cardFx:1.55,
+  options:[
+    {name:"N26",rate:6.36,pct:1.7,atm:25,limit:2500},
+    {name:"Wise",rate:6.20,pct:0,atm:0,limit:999999}
+  ]
+};
 
-const optionInputs = document.getElementById("optionInputs");
-const results = document.getElementById("results");
-const bestText = document.getElementById("bestText");
+function save(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+}
+function load(){
+  const s=localStorage.getItem(STORAGE_KEY);
+  if(s) state=JSON.parse(s);
+}
+
+load();
+
+const opts=document.getElementById("opts"),
+      rows=document.getElementById("rows"),
+      best=document.getElementById("best");
 
 function renderOptions(){
-  optionInputs.innerHTML = "";
-
-  OPTIONS.forEach((o)=>{
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
+  opts.innerHTML="";
+  state.options.forEach(o=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`
       <b>${o.name}</b>
       <div class="grid">
-        <div><label>Kurs</label><input type="number" value="${o.rate}"></div>
-        <div><label>Bank %</label><input type="number" value="${o.pct}"></div>
-        <div><label>ATM Gebühr</label><input type="number" value="${o.atm}"></div>
-        <div><label>ATM Limit</label><input type="number" value="${o.limit}"></div>
-      </div>
-    `;
-
-    const inputs = card.querySelectorAll("input");
-    inputs[0].oninput = e => { o.rate  = +e.target.value; calc(); };
-    inputs[1].oninput = e => { o.pct   = +e.target.value; calc(); };
-    inputs[2].oninput = e => { o.atm   = +e.target.value; calc(); };
-    inputs[3].oninput = e => { o.limit = +e.target.value; calc(); };
-
-    optionInputs.appendChild(card);
+        <div><label>Kurs</label><input value="${o.rate}"></div>
+        <div><label>Bank %</label><input value="${o.pct}"></div>
+      </div>`;
+    const ins=d.querySelectorAll("input");
+    ins[0].oninput=e=>{o.rate=+e.target.value;save();calc()};
+    ins[1].oninput=e=>{o.pct=+e.target.value;save();calc()};
+    opts.appendChild(d);
   });
 }
 
 function calc(){
-  let rows = OPTIONS.map(o=>{
-    let n, main, eff;
-
-    if(mode==="BRL"){
-      const net = +netBRL.value || 0;
-      n = Math.ceil(net / o.limit);
-      main = ((net + n*o.atm) / o.rate) * (1 + o.pct/100);
-      eff = net / main;
-    } else {
-      const eur = +eurBudget.value || 0;
-      const base = eur / (1 + o.pct/100);
-      let best=0, bestN=1;
-      for(let i=1;i<=20;i++){
-        const brl = Math.min(i*o.limit, base*o.rate - i*o.atm);
-        if(brl > best){ best = brl; bestN = i; }
-      }
-      n = bestN;
-      main = best;
-      eff = best / eur;
+  const brl=state.brl, eur=state.eur, fx=state.cardFx/100;
+  const out=state.options.map(o=>{
+    let res,eff;
+    if(state.mode==="CARD_BRL"){
+      res=(brl/o.rate)*(1+o.pct/100)*(1+fx); eff=brl/res;
+      return{n:o.name,main:res.toFixed(2)+" EUR",eff};
     }
-    return { ...o, n, main, eff };
+    if(state.mode==="CARD_EUR"){
+      res=eur*o.rate/(1+o.pct/100)/(1+fx); eff=res/eur;
+      return{n:o.name,main:Math.round(res)+" BRL",eff};
+    }
+    if(state.mode==="ATM_EUR"){
+      const base=eur/(1+o.pct/100);
+      const brlNet=Math.min(o.limit,base*o.rate-o.atm);
+      eff=brlNet/eur;
+      return{n:o.name,main:Math.round(brlNet)+" BRL",eff};
+    }
+    const n=Math.ceil(brl/o.limit);
+    res=((brl+n*o.atm)/o.rate)*(1+o.pct/100);
+    eff=brl/res;
+    return{n:o.name,main:res.toFixed(2)+" EUR",eff};
   }).sort((a,b)=>b.eff-a.eff);
 
-  results.innerHTML = "";
-  rows.forEach((r,i)=>{
-    results.innerHTML += `
-      <tr class="${i===0?'best':''}">
-        <td>${r.name}${i===0?'<span class="badge">BEST</span>':''}</td>
-        <td>${r.n}</td>
-        <td>${mode==="BRL" ? r.main.toFixed(2)+" EUR" : Math.round(r.main)+" BRL"}</td>
-        <td>${r.eff.toFixed(3)}</td>
-      </tr>
-    `;
+  rows.innerHTML="";
+  out.forEach((r,i)=>{
+    rows.innerHTML+=`<tr class="${i==0?"best":""}">
+      <td>${r.n}${i==0?'<span class="badge">BEST</span>':''}</td>
+      <td>${r.main}</td><td>${r.eff.toFixed(3)}</td></tr>`;
   });
-
-  const b = rows[0];
-  bestText.innerHTML = `
-    <b>${b.name}</b><br>
-    Abhebungen: ${b.n}<br>
-    ${mode==="BRL" ? "EUR nötig" : "BRL netto"}:
-    <b>${mode==="BRL"?b.main.toFixed(2)+" EUR":Math.round(b.main)+" BRL"}</b>
-  `;
+  best.innerHTML=`<b>${out[0].n}</b><br>${out[0].main}`;
 }
 
-function switchMode(m){
-  mode = m;
-  if(m==="BRL"){
-    eurBudget.value = 0;
-    eurBudget.classList.add("inactive");
-    netBRL.classList.remove("inactive");
-    tMain.innerText = "EUR nötig";
-    modeHint.innerText = "Du gibst an, wie viele BRL du abheben willst.";
-  } else {
-    netBRL.value = 0;
-    netBRL.classList.add("inactive");
-    eurBudget.classList.remove("inactive");
-    tMain.innerText = "BRL netto";
-    modeHint.innerText = "Du gibst an, wie viel EUR du einsetzen willst.";
-  }
-  calc();
+function setMode(m){
+  state.mode=m;
+  inBRL.classList.toggle("inactive",m.includes("EUR"));
+  inEUR.classList.toggle("inactive",!m.includes("EUR"));
+  if(m.includes("EUR")) state.brl=0; else state.eur=0;
+  save(); calc();
 }
 
-modeBRL.onclick = ()=>{ modeBRL.classList.add("active"); modeEUR.classList.remove("active"); switchMode("BRL"); };
-modeEUR.onclick = ()=>{ modeEUR.classList.add("active"); modeBRL.classList.remove("active"); switchMode("EUR"); };
+["ATM_BRL","ATM_EUR","CARD_BRL","CARD_EUR"].forEach(k=>{
+  document.getElementById("m"+k).onclick=()=>{
+    document.querySelectorAll(".toggle button").forEach(b=>b.classList.remove("active"));
+    document.getElementById("m"+k).classList.add("active");
+    setMode(k);
+  };
+});
 
-netBRL.oninput = calc;
-eurBudget.oninput = calc;
+inBRL.value=state.brl;
+inEUR.value=state.eur;
+cardFx.value=state.cardFx;
+
+[inBRL,inEUR,cardFx].forEach(i=>i.oninput=()=>{
+  state.brl=+inBRL.value||0;
+  state.eur=+inEUR.value||0;
+  state.cardFx=+cardFx.value||0;
+  save(); calc();
+});
+
+document.getElementById("m"+state.mode).classList.add("active");
 
 renderOptions();
 calc();
