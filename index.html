@@ -1,223 +1,126 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>BRL ↔ EUR Calculator</title>
+<meta charset="UTF-8">
+<title>BRL ↔ EUR Vergleich</title>
 
-  <!-- Mobile / iPhone -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="BRL↔EUR">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f4f6f8;
-      color: #111;
-      font-size: 16px;
-    }
-
-    .app {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    h1 {
-      font-size: 20px;
-      margin-bottom: 12px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-
-    label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-      text-align: right;
-    }
-
-    th:first-child,
-    td:first-child {
-      text-align: left;
-    }
-
-    .small {
-      font-size: 12px;
-      color: #666;
-    }
-  </style>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f6f8}
+.app{max-width:760px;margin:auto;padding:16px}
+h1{font-size:20px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+label{display:block;font-size:13px;margin:6px 0 4px}
+input,select{width:100%;padding:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid #ddd;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.best{background:#e9fbf0}
+.small{font-size:12px;color:#666}
+</style>
 </head>
 
 <body>
 <div class="app">
 
-  <select id="lang">
-    <option value="de">Deutsch</option>
-    <option value="en">English</option>
-    <option value="pt">Português</option>
-  </select>
+<select id="lang">
+  <option value="de">Deutsch</option>
+  <option value="en">English</option>
+  <option value="pt">Português</option>
+</select>
 
-  <h1 id="title"></h1>
+<h1 id="title"></h1>
 
-  <div class="card">
-    <label id="lblNet"></label>
-    <input id="netBRL" type="number" value="2500">
+<div class="card">
+  <label id="lblNet"></label>
+  <input id="netBRL" type="number" value="5000">
 
-    <label id="lblEur"></label>
-    <input id="eurBudget" type="number" value="0">
-  </div>
+  <label id="lblEur"></label>
+  <input id="eurBudget" type="number" value="0">
+</div>
 
-  <div class="card">
-    <label id="lblRate"></label>
-    <input id="rate" type="number" step="0.01" value="6.36">
+<!-- OPTIONEN -->
+<div id="options"></div>
 
-    <label id="lblAtmFee"></label>
-    <input id="atmFee" type="number" value="25">
+<div class="card">
+<table>
+<tr>
+  <th id="tOption"></th>
+  <th id="tWithdrawals"></th>
+  <th id="tEur"></th>
+  <th id="tEff"></th>
+</tr>
+<tbody id="results"></tbody>
+</table>
+</div>
 
-    <label id="lblLimit"></label>
-    <input id="atmLimit" type="number" value="2500">
-
-    <label id="lblPct"></label>
-    <input id="bankPct" type="number" step="0.1" value="1.7">
-  </div>
-
-  <div class="card">
-    <table>
-      <tr>
-        <th id="resLabel"></th>
-        <th id="resValue"></th>
-      </tr>
-      <tr>
-        <td id="rWithdrawals"></td>
-        <td id="withdrawals">–</td>
-      </tr>
-      <tr>
-        <td id="rEur"></td>
-        <td id="eurNeeded">–</td>
-      </tr>
-      <tr>
-        <td id="rEff"></td>
-        <td id="effRate">–</td>
-      </tr>
-    </table>
-  </div>
-
-  <p class="small" id="footer"></p>
+<p class="small" id="footer"></p>
 
 </div>
 
 <script>
-const T = {
-  de: {
-    title: "BRL ↔ EUR Abhebungsrechner",
-    net: "Netto BRL gewünscht",
-    eur: "ODER EUR Budget",
-    rate: "Wechselkurs (1 EUR = X BRL)",
-    atmFee: "ATM-Gebühr pro Abhebung (BRL)",
-    limit: "ATM-Limit (BRL)",
-    pct: "Bankgebühr (%)",
-    withdrawals: "Anzahl Abhebungen",
-    eurRes: "EUR benötigt",
-    eff: "Effektiver Kurs",
-    footer: "Offline nutzbar · Mobil optimiert"
-  },
-  en: {
-    title: "BRL ↔ EUR Withdrawal Calculator",
-    net: "Net BRL desired",
-    eur: "OR EUR budget",
-    rate: "Exchange rate (1 EUR = X BRL)",
-    atmFee: "ATM fee per withdrawal (BRL)",
-    limit: "ATM limit (BRL)",
-    pct: "Bank fee (%)",
-    withdrawals: "Withdrawals",
-    eurRes: "EUR needed",
-    eff: "Effective rate",
-    footer: "Works offline · Mobile optimized"
-  },
-  pt: {
-    title: "Calculadora de Saque BRL ↔ EUR",
-    net: "BRL líquido desejado",
-    eur: "OU orçamento em EUR",
-    rate: "Câmbio (1 EUR = X BRL)",
-    atmFee: "Taxa do ATM por saque (BRL)",
-    limit: "Limite do ATM (BRL)",
-    pct: "Taxa do banco (%)",
-    withdrawals: "Número de saques",
-    eurRes: "EUR necessário",
-    eff: "Câmbio efetivo",
-    footer: "Funciona offline · Otimizado para celular"
-  }
+const TEXT={
+de:{title:"BRL ↔ EUR Vergleich",net:"Netto BRL gewünscht",eur:"ODER EUR Budget",opt:"Option",with:"Abhebungen",eurRes:"EUR nötig",eff:"Eff. Kurs",footer:"Beste Option wird automatisch markiert"},
+en:{title:"BRL ↔ EUR Comparison",net:"Net BRL desired",eur:"OR EUR budget",opt:"Option",with:"Withdrawals",eurRes:"EUR needed",eff:"Eff. rate",footer:"Best option highlighted"},
+pt:{title:"Comparação BRL ↔ EUR",net:"BRL líquido desejado",eur:"OU orçamento em EUR",opt:"Opção",with:"Saques",eurRes:"EUR necessário",eff:"Câmbio efetivo",footer:"Melhor opção destacada"}
 };
 
-function applyLang() {
-  const l = lang.value;
-  title.innerText = T[l].title;
-  lblNet.innerText = T[l].net;
-  lblEur.innerText = T[l].eur;
-  lblRate.innerText = T[l].rate;
-  lblAtmFee.innerText = T[l].atmFee;
-  lblLimit.innerText = T[l].limit;
-  lblPct.innerText = T[l].pct;
-  rWithdrawals.innerText = T[l].withdrawals;
-  rEur.innerText = T[l].eurRes;
-  rEff.innerText = T[l].eff;
-  footer.innerText = T[l].footer;
+const OPTIONS=[
+ {name:"N26 ATM",rate:6.36,atm:25,limit:2500,pct:1.7},
+ {name:"Wise",rate:6.20,atm:0,limit:999999,pct:0.6}
+];
+
+function ui(){
+ const l=lang.value;
+ title.innerText=TEXT[l].title;
+ lblNet.innerText=TEXT[l].net;
+ lblEur.innerText=TEXT[l].eur;
+ tOption.innerText=TEXT[l].opt;
+ tWithdrawals.innerText=TEXT[l].with;
+ tEur.innerText=TEXT[l].eurRes;
+ tEff.innerText=TEXT[l].eff;
+ footer.innerText=TEXT[l].footer;
 }
 
-function calc() {
-  const net = +netBRL.value;
-  const rateV = +rate.value;
-  const atm = +atmFee.value;
-  const lim = +atmLimit.value;
-  const pct = +bankPct.value;
-
-  if (!rateV || !lim) return;
-
-  const brl = net;
-  const n = Math.ceil(brl / lim);
-  const eurBase = (brl + n * atm) / rateV;
-  const eur = eurBase * (1 + pct / 100);
-  const eff = brl / eur;
-
-  withdrawals.innerText = n;
-  eurNeeded.innerText = eur.toFixed(2);
-  effRate.innerText = eff.toFixed(3);
+function renderOptions(){
+ options.innerHTML="";
+ OPTIONS.forEach((o,i)=>{
+  options.innerHTML+=`
+  <div class="card">
+    <b>${o.name}</b>
+    <label>Kurs</label><input type="number" value="${o.rate}" oninput="OPTIONS[${i}].rate=this.value;calc()">
+    <label>ATM Gebühr</label><input type="number" value="${o.atm}" oninput="OPTIONS[${i}].atm=this.value;calc()">
+    <label>ATM Limit</label><input type="number" value="${o.limit}" oninput="OPTIONS[${i}].limit=this.value;calc()">
+    <label>Bank %</label><input type="number" value="${o.pct}" oninput="OPTIONS[${i}].pct=this.value;calc()">
+  </div>`;
+ });
 }
 
-document.querySelectorAll("input, select").forEach(e =>
-  e.addEventListener("input", () => { applyLang(); calc(); })
-);
+function calc(){
+ const net=+netBRL.value;
+ let best=-1,bestEff=0;
+ results.innerHTML="";
+ OPTIONS.forEach((o,i)=>{
+  const n=Math.ceil(net/o.limit);
+  const eur=((net+n*o.atm)/o.rate)*(1+o.pct/100);
+  const eff=net/eur;
+  if(eff>bestEff){bestEff=eff;best=i}
+  results.innerHTML+=`
+   <tr class="${best===i?'best':''}">
+    <td>${o.name}</td>
+    <td>${n}</td>
+    <td>${eur.toFixed(2)}</td>
+    <td>${eff.toFixed(3)}</td>
+   </tr>`;
+ });
+}
 
-applyLang();
-calc();
+lang.onchange=()=>{ui();calc()};
+document.querySelectorAll("input").forEach(i=>i.oninput=calc);
+
+ui();renderOptions();calc();
 </script>
 
 </body>
