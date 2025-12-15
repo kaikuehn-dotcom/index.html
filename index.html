@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BRL↔EUR Abhebung – Rechner</title>
+  <style>
+    :root { --bg:#0b1220; --card:#111a2e; --muted:#9fb0d0; --text:#eaf0ff; --acc:#7aa2ff; --warn:#ffcf5a; --ok:#7dffb3; }
+    *{ box-sizing:border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    body{ margin:0; background:linear-gradient(180deg,#070b14, #0b1220); color:var(--text); }
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px; }
+    h1{ font-size:20px; margin:6px 0 4px; }
+    .sub{ color:var(--muted); margin:0 0 16px; font-size:13px; }
+    .grid{ display:grid; gap:12px; }
+    .row{ display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width: 900px){ .row{ grid-template-columns: 1.1fr 1.9fr; } }
+    .card{ background:rgba(17,26,46,.92); border:1px solid rgba(122,162,255,.16); border-radius:14px; padding:14px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    .card h2{ font-size:14px; margin:0 0 10px; color:#d7e2ff; letter-spacing:.3px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input, select{ width:100%; padding:10px 10px; border-radius:10px; border:1px solid rgba(159,176,208,.22); background:rgba(6,10,18,.6); color:var(--text); outline:none; }
+    input:focus{ border-color: rgba(122,162,255,.6); }
+    .twocol{ display:grid; gap:10px; grid-template-columns: 1fr; }
+    @media (min-width: 600px){ .twocol{ grid-template-columns: 1fr 1fr; } }
+    .btns{ display:flex; gap:10px; flex-wrap:wrap; }
+    button{ cursor:pointer; border:1px solid rgba(122,162,255,.35); background:rgba(122,162,255,.12); color:var(--text); padding:10px 12px; border-radius:10px; }
+    button:hover{ border-color: rgba(122,162,255,.7); }
+    .pill{ display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; background:rgba(159,176,208,.10); border:1px solid rgba(159,176,208,.18); font-size:12px; color:var(--muted); }
+    table{ width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px; }
+    th, td{ padding:10px; border-bottom:1px solid rgba(159,176,208,.14); vertical-align:top; }
+    th{ text-align:left; font-size:12px; color:var(--muted); background:rgba(6,10,18,.35); position:sticky; top:0; }
+    tr:last-child td{ border-bottom:none; }
+    .best{ outline:2px solid rgba(125,255,179,.35); background:rgba(125,255,179,.06); }
+    .muted{ color:var(--muted); font-size:12px; }
+    .small{ font-size:12px; }
+    .danger{ color: #ff8b8b; }
+    .ok{ color: var(--ok); }
+    .mono{ font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>BRL↔EUR Abhebung – Kostenrechner</h1>
+    <p class="sub">Alles manuell eingeben (Kurs + Gebühren pro Option). Rechnet vorab: „EUR nötig für X BRL“ oder „BRL netto aus X EUR“.</p>
+
+    <div class="row">
+      <div class="card">
+        <h2>Global</h2>
+        <div class="twocol">
+          <div>
+            <label>Netto-BRL gewünscht (z. B. 360) – wenn > 0, wird dieser Modus genutzt</label>
+            <input id="netBRL" type="number" step="1" value="360" />
+          </div>
+          <div>
+            <label>ODER: EUR Budget verfügbar (z. B. 100) – nur wenn Netto-BRL = 0</label>
+            <input id="eurBudget" type="number" step="0.01" value="0" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <span id="modePill" class="pill"></span>
+          <span class="pill">Kurs immer als <b>1 EUR = X BRL</b></span>
+        </div>
+
+        <div class="btns" style="margin-top:12px;">
+          <button id="addOption">+ Option hinzufügen</button>
+          <button id="reset">Reset auf Beispiel</button>
+          <button id="export">Export JSON</button>
+          <button id="importBtn">Import JSON</button>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+        </div>
+
+        <p class="muted" style="margin-top:10px;">
+          Tipp: Für Brasilien häufig: lokale ATM-Fee <b>25 BRL</b>, N26 z. B. <b>1,7%</b>. Wise: Kurs/Fees manuell setzen.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Vergleich (pro Option manuell)</h2>
+        <div style="overflow:auto; max-height: 68vh;">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:190px;">Option</th>
+                <th style="min-width:160px;">Kurs<br><span class="small">(1 EUR = X BRL)</span></th>
+                <th style="min-width:150px;">Lokale Fee<br><span class="small">(BRL)</span></th>
+                <th style="min-width:150px;">Bank Fee<br><span class="small">(%)</span></th>
+                <th style="min-width:140px;">Fix Fee<br><span class="small">(EUR)</span></th>
+                <th style="min-width:190px;">EUR nötig<br><span class="small">(für Netto-BRL)</span></th>
+                <th style="min-width:190px;">BRL netto<br><span class="small">(aus EUR Budget)</span></th>
+                <th style="min-width:170px;">Effektiver Kurs<br><span class="small">(BRL/EUR)</span></th>
+                <th style="min-width:120px;">Aktion</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <p class="muted" style="margin-top:10px;">
+          “Beste Option” = höchster effektiver Kurs (mehr BRL pro 1 EUR, nach Gebühren).
+        </p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------- Core math ----------
+  function toNum(x){ const n = Number(x); return Number.isFinite(n) ? n : 0; }
+  function round(n, d=2){ const p = Math.pow(10,d); return Math.round((n + Number.EPSILON) * p) / p; }
+
+  // EUR needed to receive netBRL (user wants net cash in BRL)
+  // eurNeeded = [((netBRL + localFeeBRL)/rate) + fixEUR] / (1 - pct/100)
+  function calcEurNeeded(netBRL, rate, localFeeBRL, pct, fixEUR){
+    const denom = 1 - (pct/100);
+    if(rate <= 0 || denom <= 0) return null;
+    const eurBeforePct = ((netBRL + localFeeBRL) / rate) + fixEUR;
+    return eurBeforePct / denom;
+  }
+
+  // net BRL from a EUR budget
+  // netEurSpendable = max(0, (eurBudget - fixEUR)) * (1 - pct/100)
+  // brlNet = netEurSpendable * rate - localFeeBRL
+  function calcBrlFromBudget(eurBudget, rate, localFeeBRL, pct, fixEUR){
+    const denom = 1 - (pct/100);
+    if(rate <= 0 || denom < 0) return null;
+    const netEur = Math.max(0, (eurBudget - fixEUR)) * denom;
+    const brl = (netEur * rate) - localFeeBRL;
+    return Math.max(0, brl);
+  }
+
+  // effective rate:
+  // - in netBRL mode: netBRL / eurNeeded
+  // - in budget mode: brlNet / eurBudget
+  function effectiveRate({mode, netBRL, eurBudget, eurNeeded, brlNet}){
+    if(mode === "NET_BRL"){
+      if(!eurNeeded || eurNeeded <= 0) return null;
+      return netBRL / eurNeeded;
+    }
+    if(mode === "EUR_BUDGET"){
+      if(!eurBudget || eurBudget <= 0) return null;
+      return brlNet / eurBudget;
+    }
+    return null;
+  }
+
+  // ---------- State ----------
+  const defaultOptions = [
+    { name: "N26 + ATM Brasilien", rate: 6.36, localFee: 25, pct: 1.70, fix: 0 },
+    { name: "Wise/Transfer", rate: 6.20, localFee: 0, pct: 0.60, fix: 0 },
+  ];
+
+  function loadState(){
+    const saved = localStorage.getItem("brlEurAppState");
+    if(saved){
+      try { return JSON.parse(saved); } catch(e){}
+    }
+    return { netBRL: 360, eurBudget: 0, options: structuredClone(defaultOptions) };
+  }
+
+  function saveState(){
+    localStorage.setItem("brlEurAppState", JSON.stringify(state));
+  }
+
+  let state = loadState();
+
+  // ---------- UI helpers ----------
+  const netBRLInput = document.getElementById("netBRL");
+  const eurBudgetInput = document.getElementById("eurBudget");
+  const modePill = document.getElementById("modePill");
+  const tbody = document.getElementById("tbody");
+
+  function mode(){
+    const netBRL = toNum(state.netBRL);
+    const eurBudget = toNum(state.eurBudget);
+    if(netBRL > 0) return "NET_BRL";
+    if(netBRL === 0 && eurBudget > 0) return "EUR_BUDGET";
+    return "NONE";
+  }
+
+  function fmtEUR(x){
+    if(x === null || x === undefined || !Number.isFinite(x)) return "—";
+    return new Intl.NumberFormat("de-DE", { style:"currency", currency:"EUR" }).format(x);
+  }
+  function fmtBRL(x){
+    if(x === null || x === undefined || !Number.isFinite(x)) return "—";
+    return new Intl.NumberFormat("de-DE", { maximumFractionDigits:0 }).format(x) + " BRL";
+  }
+  function fmtRate(x){
+    if(x === null || x === undefined || !Number.isFinite(x)) return "—";
+    return new Intl.NumberFormat("de-DE", { minimumFractionDigits: 4, maximumFractionDigits: 4 }).format(x);
+  }
+
+  function computeRows(){
+    const m = mode();
+    const netBRL = toNum(state.netBRL);
+    const eurBudget = toNum(state.eurBudget);
+
+    const rows = state.options.map((o, idx) => {
+      const rate = toNum(o.rate);
+      const localFee = toNum(o.localFee);
+      const pct = toNum(o.pct);
+      const fix = toNum(o.fix);
+
+      const eurNeeded = (m === "NET_BRL") ? calcEurNeeded(netBRL, rate, localFee, pct, fix) : null;
+      const brlNet = (m === "EUR_BUDGET") ? calcBrlFromBudget(eurBudget, rate, localFee, pct, fix) : null;
+      const eff = effectiveRate({ mode:m, netBRL, eurBudget, eurNeeded, brlNet });
+
+      return { idx, ...o, rate, localFee, pct, fix, eurNeeded, brlNet, eff };
+    });
+
+    // Best = max effective rate (ignore nulls)
+    let bestIdx = null;
+    let bestVal = -Infinity;
+    for(const r of rows){
+      if(Number.isFinite(r.eff) && r.eff > bestVal){
+        bestVal = r.eff; bestIdx = r.idx;
+      }
+    }
+    return { rows, bestIdx, mode:m };
+  }
+
+  function render(){
+    // sync inputs
+    netBRLInput.value = state.netBRL;
+    eurBudgetInput.value = state.eurBudget;
+
+    const m = mode();
+    if(m === "NET_BRL"){
+      modePill.innerHTML = `Modus: <b>Netto-BRL Ziel</b> (du willst ${toNum(state.netBRL)} BRL netto)`;
+    } else if(m === "EUR_BUDGET"){
+      modePill.innerHTML = `Modus: <b>EUR Budget</b> (du hast ${fmtEUR(toNum(state.eurBudget))})`;
+    } else {
+      modePill.innerHTML = `<span class="danger">Bitte entweder Netto-BRL > 0 setzen oder EUR Budget > 0 (und Netto-BRL = 0).</span>`;
+    }
+
+    const { rows, bestIdx, mode:cmode } = computeRows();
+
+    tbody.innerHTML = rows.map(r => {
+      const isBest = (r.idx === bestIdx && cmode !== "NONE");
+      const eurNeededTxt = (cmode === "NET_BRL") ? fmtEUR(r.eurNeeded) : "—";
+      const brlNetTxt = (cmode === "EUR_BUDGET") ? fmtBRL(r.brlNet) : "—";
+      const effTxt = fmtRate(r.eff);
+
+      return `
+        <tr class="${isBest ? "best" : ""}">
+          <td>
+            <label class="muted">Name</label>
+            <input type="text" value="${escapeHtml(r.name ?? "")}" data-k="name" data-i="${r.idx}" />
+            ${isBest ? `<div class="pill" style="margin-top:8px;"><span class="ok">✓ Beste Option</span></div>` : ``}
+          </td>
+
+          <td>
+            <label class="muted">1 EUR = X BRL</label>
+            <input type="number" step="0.0001" value="${r.rate}" data-k="rate" data-i="${r.idx}" />
+          </td>
+
+          <td>
+            <label class="muted">Lokale Fee (BRL)</label>
+            <input type="number" step="0.01" value="${r.localFee}" data-k="localFee" data-i="${r.idx}" />
+          </td>
+
+          <td>
+            <label class="muted">Bank Fee (%)</label>
+            <input type="number" step="0.01" value="${r.pct}" data-k="pct" data-i="${r.idx}" />
+          </td>
+
+          <td>
+            <label class="muted">Fix Fee (EUR)</label>
+            <input type="number" step="0.01" value="${r.fix}" data-k="fix" data-i="${r.idx}" />
+          </td>
+
+          <td class="mono">
+            <div class="muted">EUR nötig</div>
+            <div style="font-weight:700; margin-top:4px;">${eurNeededTxt}</div>
+          </td>
+
+          <td class="mono">
+            <div class="muted">BRL netto</div>
+            <div style="font-weight:700; margin-top:4px;">${brlNetTxt}</div>
+          </td>
+
+          <td class="mono">
+            <div class="muted">Eff. Kurs</div>
+            <div style="font-weight:700; margin-top:4px;">${effTxt}</div>
+          </td>
+
+          <td>
+            <button data-del="${r.idx}">Löschen</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    saveState();
+  }
+
+  function escapeHtml(str){
+    return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+
+  // ---------- Events ----------
+  netBRLInput.addEventListener("input", (e) => {
+    state.netBRL = toNum(e.target.value);
+    render();
+  });
+  eurBudgetInput.addEventListener("input", (e) => {
+    state.eurBudget = toNum(e.target.value);
+    render();
+  });
+
+  tbody.addEventListener("input", (e) => {
+    const el = e.target;
+    if(!(el instanceof HTMLInputElement)) return;
+    const idx = Number(el.dataset.i);
+    const key = el.dataset.k;
+    if(!Number.isFinite(idx) || !key) return;
+
+    const opt = state.options[idx];
+    if(!opt) return;
+
+    if(key === "name"){
+      opt.name = el.value;
+    } else {
+      opt[key] = toNum(el.value);
+    }
+    render();
+  });
+
+  tbody.addEventListener("click", (e) => {
+    const el = e.target;
+    if(!(el instanceof HTMLElement)) return;
+    const del = el.getAttribute("data-del");
+    if(del !== null){
+      const idx = Number(del);
+      state.options.splice(idx, 1);
+      // reindex is implicit because we use array indexes; just rerender
+      render();
+    }
+  });
+
+  document.getElementById("addOption").addEventListener("click", () => {
+    state.options.push({ name:"Neue Option", rate: 6.00, localFee: 0, pct: 0, fix: 0 });
+    render();
+  });
+
+  document.getElementById("reset").addEventListener("click", () => {
+    state = { netBRL: 360, eurBudget: 0, options: structuredClone(defaultOptions) };
+    render();
+  });
+
+  document.getElementById("export").addEventListener("click", async () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "brl-eur-rechner.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  const importBtn = document.getElementById("importBtn");
+  const importFile = document.getElementById("importFile");
+
+  importBtn.addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", async () => {
+    const file = importFile.files?.[0];
+    if(!file) return;
+    const text = await file.text();
+    try{
+      const parsed = JSON.parse(text);
+      if(typeof parsed !== "object" || !parsed) throw new Error("invalid");
+      state = {
+        netBRL: toNum(parsed.netBRL),
+        eurBudget: toNum(parsed.eurBudget),
+        options: Array.isArray(parsed.options) ? parsed.options.map(o => ({
+          name: String(o.name ?? ""),
+          rate: toNum(o.rate),
+          localFee: toNum(o.localFee),
+          pct: toNum(o.pct),
+          fix: toNum(o.fix),
+        })) : structuredClone(defaultOptions)
+      };
+      render();
+    }catch(err){
+      alert("Import fehlgeschlagen: ungültige JSON-Datei.");
+    } finally {
+      importFile.value = "";
+    }
+  });
+
+  // First render
+  render();
+</script>
+</body>
+</html>
