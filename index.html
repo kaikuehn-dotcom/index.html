@@ -31,10 +31,7 @@ body{
   margin:auto;
   padding:16px;
 }
-h1{
-  font-size:22px;
-  margin:12px 0 16px;
-}
+h1{font-size:22px;margin:12px 0 16px}
 .card{
   background:var(--card);
   border-radius:16px;
@@ -64,13 +61,8 @@ input.inactive{
   background:#f8fafc;
   color:var(--muted);
 }
-.grid{
-  display:grid;
-  gap:12px;
-}
-@media(min-width:760px){
-  .grid{grid-template-columns:1fr 1fr;}
-}
+.grid{display:grid;gap:12px}
+@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
 .toggle{
   display:flex;
   background:#e5e9f2;
@@ -102,9 +94,7 @@ th,td{
   text-align:right;
 }
 th:first-child,td:first-child{text-align:left}
-tr.best{
-  background:var(--best);
-}
+tr.best{background:var(--best)}
 .badge{
   display:inline-block;
   background:#16a34a;
@@ -118,23 +108,14 @@ tr.best{
   border:2px solid var(--bestBorder);
   background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
 }
-.small{
-  font-size:12px;
-  color:#475569;
-}
+.small{font-size:12px;color:#475569}
 </style>
 </head>
 
 <body>
 <div class="app">
 
-<select id="lang">
-  <option value="de">Deutsch</option>
-  <option value="en">English</option>
-  <option value="pt">Português</option>
-</select>
-
-<h1 id="title">BRL ↔ EUR Abhebungs-Vergleich</h1>
+<h1>BRL ↔ EUR Abhebungs-Vergleich</h1>
 
 <!-- MODE -->
 <div class="card">
@@ -145,11 +126,11 @@ tr.best{
 
   <div class="grid" style="margin-top:14px">
     <div>
-      <label id="lblBRL">Netto BRL gewünscht</label>
+      <label>Netto BRL gewünscht</label>
       <input id="netBRL" type="number" value="5000">
     </div>
     <div>
-      <label id="lblEUR">EUR Budget verfügbar</label>
+      <label>EUR Budget verfügbar</label>
       <input id="eurBudget" type="number" value="0" class="inactive">
     </div>
   </div>
@@ -204,14 +185,14 @@ const bestText = document.getElementById("bestText");
 function renderOptions(){
   optionInputs.innerHTML = "";
 
-  OPTIONS.forEach((o,i)=>{
+  OPTIONS.forEach((o)=>{
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <b>${o.name}</b>
       <div class="grid">
         <div><label>Kurs</label><input type="number" value="${o.rate}"></div>
-        <div><label>Bank %</label><input type="number" value="${o.pct}" ${o.name==="Wise"?"disabled":""}></div>
+        <div><label>Bank %</label><input type="number" value="${o.pct}"></div>
         <div><label>ATM Gebühr</label><input type="number" value="${o.atm}"></div>
         <div><label>ATM Limit</label><input type="number" value="${o.limit}"></div>
       </div>
@@ -267,21 +248,20 @@ function calc(){
   bestText.innerHTML = `
     <b>${b.name}</b><br>
     Abhebungen: ${b.n}<br>
-    ${mode==="BRL" ? "EUR nötig" : "BRL netto"}: <b>${mode==="BRL"?b.main.toFixed(2)+" EUR":Math.round(b.main)+" BRL"}</b>
+    ${mode==="BRL" ? "EUR nötig" : "BRL netto"}:
+    <b>${mode==="BRL"?b.main.toFixed(2)+" EUR":Math.round(b.main)+" BRL"}</b>
   `;
 }
 
 function switchMode(m){
   mode = m;
   if(m==="BRL"){
-    netBRL.value = netBRL.value || 5000;
     eurBudget.value = 0;
     eurBudget.classList.add("inactive");
     netBRL.classList.remove("inactive");
     tMain.innerText = "EUR nötig";
     modeHint.innerText = "Du gibst an, wie viele BRL du abheben willst.";
   } else {
-    eurBudget.value = eurBudget.value || 1000;
     netBRL.value = 0;
     netBRL.classList.add("inactive");
     eurBudget.classList.remove("inactive");
