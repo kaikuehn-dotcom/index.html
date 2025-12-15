@@ -1,139 +1,184 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BRL↔EUR Zahlungswege – Best to Worst</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRL↔EUR</title>
 
-<style>
-:root{
-  --bg1:#f3f6fb; --bg2:#eef2f7; --card:#fff;
-  --accent:#2563eb; --accent2:#1d4ed8; --accentSoft:#e8efff;
-  --best:#e9fbf0; --bestBorder:#16a34a;
-  --border:#d7dbe3; --input:#eef2ff; --muted:#94a3b8;
-  --danger:#ef4444;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
-  color:#0f172a;
-}
-.app{max-width:980px;margin:auto;padding:16px}
-h1{font-size:22px;margin:12px 0 16px}
-.card{
-  background:var(--card);
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
-  box-shadow:0 6px 20px rgba(15,23,42,.08);
-}
-.small{font-size:12px;color:#475569;line-height:1.35}
-label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}
-input, select{
-  width:100%;
-  padding:12px;
-  font-size:16px;
-  border-radius:12px;
-  border:2px solid var(--input);
-  background:#fff;
-}
-input:focus, select:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accentSoft);
-}
-input.inactive{background:#f8fafc;color:var(--muted)}
-.grid{display:grid;gap:12px}
-@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
-.seg{
-  display:flex; gap:8px; flex-wrap:wrap;
-  background:#e5e9f2; padding:6px; border-radius:999px;
-}
-.seg button{
-  flex:1 1 220px;
-  border:none; cursor:pointer;
-  padding:10px 12px;
-  border-radius:999px;
-  font-weight:900;
-  background:transparent;
-  color:#334155;
-}
-.seg button.active{
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#fff;
-}
-.btn{
-  border:none; cursor:pointer;
-  padding:10px 12px;
-  border-radius:12px;
-  font-weight:900;
-}
-.btnPrimary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.btnDanger{background:#fee2e2;color:#991b1b}
+  <!-- iPhone / Home Screen basics (icon comes next step) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="BRL↔EUR">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <!-- later: add icon files in repo root -->
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" sizes="192x192" href="icon-192.png">
 
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
-th:first-child,td:first-child{text-align:left}
-tr.best{background:var(--best)}
-.badge{
-  display:inline-block;background:#16a34a;color:#fff;
-  font-size:12px;padding:4px 10px;border-radius:999px;margin-left:6px
-}
-.top-best{
-  border:2px solid var(--bestBorder);
-  background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
-}
-.rowTop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.optionTitle{display:flex;gap:10px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
-.optionTitle .nameWrap{flex:1;min-width:220px}
-.hr{height:1px;background:var(--border);margin:12px 0}
-
-.pill{
-  display:inline-block;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  background:#eef2ff;
-  border:1px solid #cdd8ff;
-  color:#1f3cff;
-}
-</style>
+  <style>
+    :root{
+      --bg1:#f3f6fb; --bg2:#eef2f7; --card:#fff;
+      --accent:#2563eb; --accent2:#1d4ed8; --accentSoft:#e8efff;
+      --best:#e9fbf0; --bestBorder:#16a34a;
+      --border:#d7dbe3; --input:#eef2ff; --muted:#94a3b8;
+      --dangerBg:#fee2e2; --dangerText:#991b1b;
+      --warnBg:#fff7ed; --warnText:#9a3412;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+      background:linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#0f172a;
+    }
+    .app{max-width:1000px;margin:auto;padding:16px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    h1{font-size:22px;margin:12px 0}
+    .card{
+      background:var(--card);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:0 6px 20px rgba(15,23,42,.08);
+    }
+    .small{font-size:12px;color:#475569;line-height:1.35}
+    label{display:block;font-size:13px;font-weight:900;margin:10px 0 6px}
+    input, select{
+      width:100%;
+      padding:12px;
+      font-size:16px;
+      border-radius:12px;
+      border:2px solid var(--input);
+      background:#fff;
+    }
+    input:focus, select:focus{
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px var(--accentSoft);
+    }
+    input.inactive{background:#f8fafc;color:var(--muted)}
+    .grid{display:grid;gap:12px}
+    @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+    .seg{
+      display:flex; gap:8px; flex-wrap:wrap;
+      background:#e5e9f2; padding:6px; border-radius:999px;
+    }
+    .seg button{
+      flex:1 1 220px;
+      border:none; cursor:pointer;
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:950;
+      background:transparent;
+      color:#334155;
+    }
+    .seg button.active{
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+    }
+    .rowTop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .btn{
+      border:none; cursor:pointer;
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:950;
+    }
+    .btnPrimary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .btnDanger{background:var(--dangerBg);color:var(--dangerText)}
+    .btnGhost{background:#eef2ff;color:#1e293b}
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:950;
+      background:#eef2ff;
+      border:1px solid #cdd8ff;
+      color:#1f3cff;
+    }
+    .hr{height:1px;background:var(--border);margin:12px 0}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
+    th:first-child,td:first-child{text-align:left}
+    tr.best{background:var(--best)}
+    .badge{
+      display:inline-block;background:#16a34a;color:#fff;
+      font-size:12px;padding:4px 10px;border-radius:999px;margin-left:6px
+    }
+    .top-best{
+      border:2px solid var(--bestBorder);
+      background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
+    }
+    #savingBox{
+      margin-top:12px;
+      padding:14px;
+      border-radius:14px;
+      background:#dcfce7;
+      border:2px solid #16a34a;
+      font-weight:950;
+      text-align:center;
+      font-size:16px;
+      display:none;
+    }
+    .optHeader{display:flex;gap:10px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+    .nameWrap{flex:1;min-width:260px}
+    .favBtn{
+      border:none;background:transparent;cursor:pointer;
+      font-size:18px;line-height:1;
+      padding:10px 10px;
+      border-radius:12px;
+    }
+    .favOn{color:#f59e0b}
+    .favOff{color:#94a3b8}
+    .miniInfo{
+      padding:10px;border-radius:12px;border:1px solid var(--border);
+      background:#f8fafc;
+    }
+    .warn{
+      background:var(--warnBg);
+      border:1px solid #fed7aa;
+      color:var(--warnText);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:850;
+    }
+  </style>
 </head>
 
 <body>
 <div class="app">
-  <h1>BRL↔EUR Zahlungswege – günstigster Weg in €</h1>
+  <div class="topbar">
+    <h1 id="title">BRL↔EUR – günstigster Zahlungsweg</h1>
+    <select id="lang" style="max-width:220px" aria-label="Language">
+      <option value="de">Deutsch</option>
+      <option value="en">English</option>
+      <option value="pt">Português</option>
+    </select>
+  </div>
 
   <!-- MODE + INPUT -->
   <div class="card">
     <div class="seg">
-      <button id="mPayBRL" class="active">Ich muss BRL zahlen</button>
-      <button id="mHaveEUR">Ich habe EUR übrig</button>
+      <button id="mPayBRL" class="active"></button>
+      <button id="mHaveEUR"></button>
     </div>
 
     <div class="grid" style="margin-top:14px">
       <div>
-        <label id="lblBRL">BRL Betrag (z. B. 360)</label>
-        <input id="inBRL" type="number" inputmode="numeric" value="360" />
+        <label id="lblBRL"></label>
+        <input id="inBRL" type="number" inputmode="numeric" />
       </div>
       <div>
-        <label id="lblEUR">EUR Betrag (z. B. 150)</label>
-        <input id="inEUR" type="number" inputmode="decimal" step="0.01" value="0" class="inactive" />
+        <label id="lblEUR"></label>
+        <input id="inEUR" type="number" inputmode="decimal" step="0.01" />
       </div>
     </div>
 
-    <div class="small" id="modeHint" style="margin-top:10px">
-      Du gibst den BRL-Betrag ein – ich berechne, welcher Zahlungsweg dich am wenigsten EUR kostet.
-    </div>
+    <div class="small" id="modeHint" style="margin-top:10px"></div>
 
     <div class="hr"></div>
-
     <div class="small">
-      <span class="pill">ATM-Limit Standard: 2.500 BRL</span>
-      &nbsp;→ ATM-Gebühr fällt pro Abhebung an (mehrfach), Bank-% nur einmal.
+      <span class="pill" id="atmPill"></span>
+      <span id="atmPillText"></span>
     </div>
   </div>
 
@@ -141,10 +186,10 @@ tr.best{background:var(--best)}
   <div class="card">
     <div class="rowTop">
       <div>
-        <b>Deine Zahlungswege</b>
-        <div class="small">ATM / Transfer / Kreditkarte – alles bleibt im selben Vergleich.</div>
+        <b id="waysTitle"></b>
+        <div class="small" id="waysSubtitle"></div>
       </div>
-      <button id="addOption" class="btn btnPrimary">+ Zahlungsweg hinzufügen</button>
+      <button id="addOption" class="btn btnPrimary"></button>
     </div>
   </div>
 
@@ -153,8 +198,9 @@ tr.best{background:var(--best)}
 
   <!-- BEST -->
   <div class="card top-best">
-    <h2 style="margin:0 0 10px">🏆 Beste Option</h2>
+    <h2 id="bestTitle" style="margin:0 0 10px"></h2>
     <div id="bestBox"></div>
+    <div id="savingBox"></div>
     <div class="small" id="bestExplain" style="margin-top:8px"></div>
   </div>
 
@@ -163,49 +209,246 @@ tr.best{background:var(--best)}
     <table>
       <thead>
         <tr>
-          <th>Zahlungsweg</th>
-          <th id="colWithdrawals">Abhebungen</th>
-          <th id="colResult">Kosten (EUR)</th>
-          <th>Effektiv</th>
+          <th id="thWay"></th>
+          <th id="thWithdrawals"></th>
+          <th id="thResult"></th>
+          <th id="thEffective"></th>
         </tr>
       </thead>
       <tbody id="resultRows"></tbody>
     </table>
     <div class="small" id="tableNote" style="margin-top:10px"></div>
   </div>
+
+  <!-- RESET -->
+  <div class="card" style="text-align:center; opacity:.75">
+    <button id="resetApp" class="btn btnDanger"></button>
+    <div class="small" id="resetHint" style="margin-top:8px"></div>
+  </div>
 </div>
 
 <script>
-/* -------------------------
-   Storage
-------------------------- */
-const STORE_KEY = "brl_eur_bestway_v2";
+/* =========================
+   i18n
+========================= */
+const I18N = {
+  de: {
+    title: "BRL↔EUR – günstigster Zahlungsweg in €",
+    mPayBRL: "Ich muss BRL zahlen",
+    mHaveEUR: "Ich habe EUR übrig",
+    lblBRL_pay: "BRL Betrag (z. B. 360)",
+    lblEUR_pay: "EUR Betrag (wird berechnet)",
+    lblBRL_have: "BRL Betrag (wird berechnet)",
+    lblEUR_have: "EUR Betrag (z. B. 150)",
+    hint_pay: "Du gibst den BRL-Betrag ein – ich berechne, welcher Zahlungsweg dich am wenigsten EUR kostet (Best→Worst).",
+    hint_have: "Du gibst den EUR-Betrag ein – ich berechne, womit du am meisten BRL bekommst (Best→Worst).",
+    atmPill: "ATM-Limit Standard: 2.500 BRL",
+    atmPillText: " → ATM-Gebühr fällt pro Abhebung an (mehrfach), Bank-% nur einmal.",
+    waysTitle: "Deine Zahlungswege",
+    waysSubtitle: "ATM / Transfer / Kreditkarte – alles im gleichen Vergleich.",
+    addOption: "+ Zahlungsweg hinzufügen",
+    bestTitle: "🏆 Beste Option",
+    thWay: "Zahlungsweg",
+    thWithdrawals: "Abhebungen",
+    thResult_pay: "Kosten (EUR)",
+    thResult_have: "BRL verfügbar",
+    thEffective_pay: "Effektiv (BRL/EUR)",
+    thEffective_have: "Effektiv (BRL/EUR)",
+    note_pay: "Vergleich: Für deinen BRL-Betrag → welche Option kostet dich am wenigsten EUR?",
+    note_have: "Vergleich: Für deinen EUR-Betrag → womit bekommst du am meisten BRL?",
+    best_costFor: "Kosten für",
+    best_is: "sind",
+    best_for: "Für",
+    best_get: "bekommst du",
+    best_explain_atm: "ATM-Limit (2.500) & Abhebungsgebühr wurden korrekt berücksichtigt.",
+    best_explain_card: "Kreditkarte ist im Vergleich – inkl. Fremdwährungsgebühr (FX).",
+    best_explain_transfer: "Transfer/Wise im Vergleich – ohne ATM-Gebühr/Limit.",
+    saving_pay: (eur) => `💰 Du sparst ${eur} EUR gegenüber der nächstbesten Option`,
+    saving_have: (brl) => `💰 Du bekommst ${brl} BRL mehr als mit der nächstbesten Option`,
+    optName: "Name",
+    optType: "Typ",
+    type_atm: "ATM (Bargeld)",
+    type_transfer: "Transfer / Wise",
+    type_card: "Kreditkarte",
+    optRate: "Kurs (1 EUR = X BRL)",
+    optBank: "Bankgebühr % (optional)",
+    optFixBRL: "Fixe Gebühr (BRL) (optional)",
+    optFixEUR: "Fixe Gebühr (EUR) (optional)",
+    optAtmFee: "ATM Gebühr pro Abhebung (BRL)",
+    optAtmLimit: "ATM Limit pro Abhebung (BRL)",
+    optFx: "FX-Gebühr Kreditkarte (%)",
+    optHintCard: "Karte: EUR = BRL ÷ Kurs × (1+Bank%) × (1+FX)",
+    optInfo_atm: "ATM: Limit & Abhebungsgebühr pro Abhebung (z. B. 5.000 BRL → 2 Abhebungen).",
+    optInfo_card: "Kreditkarte bleibt im Vergleich – inklusive FX-Gebühr.",
+    optInfo_transfer: "Transfer/Wise: keine Abhebungen/ATM-Gebühren, nur Kurs + Gebühren.",
+    mustKeepOne: "Mindestens 1 Zahlungsweg muss bleiben.",
+    reset: "🔄 Alles zurücksetzen",
+    resetHint: "Setzt Werte, Optionen & Sprache zurück (alle gespeicherten Daten werden gelöscht).",
+    resetConfirm: "Willst du wirklich alles zurücksetzen?\nAlle gespeicherten Werte gehen verloren."
+  },
+  en: {
+    title: "BRL↔EUR – cheapest payment route in €",
+    mPayBRL: "I need to pay BRL",
+    mHaveEUR: "I have EUR left",
+    lblBRL_pay: "BRL amount (e.g. 360)",
+    lblEUR_pay: "EUR amount (calculated)",
+    lblBRL_have: "BRL amount (calculated)",
+    lblEUR_have: "EUR amount (e.g. 150)",
+    hint_pay: "Enter the BRL amount — I’ll rank routes by lowest EUR cost (best→worst).",
+    hint_have: "Enter the EUR amount — I’ll rank routes by most BRL received (best→worst).",
+    atmPill: "ATM limit default: 2,500 BRL",
+    atmPillText: " → ATM fee is charged per withdrawal (multiple times), bank % only once.",
+    waysTitle: "Your payment routes",
+    waysSubtitle: "ATM / transfer / credit card — all in one comparison.",
+    addOption: "+ Add route",
+    bestTitle: "🏆 Best option",
+    thWay: "Route",
+    thWithdrawals: "Withdrawals",
+    thResult_pay: "Cost (EUR)",
+    thResult_have: "BRL received",
+    thEffective_pay: "Effective (BRL/EUR)",
+    thEffective_have: "Effective (BRL/EUR)",
+    note_pay: "Comparison: for your BRL amount → which route costs the least EUR?",
+    note_have: "Comparison: for your EUR amount → which route yields the most BRL?",
+    best_costFor: "Cost for",
+    best_is: "is",
+    best_for: "For",
+    best_get: "you get",
+    best_explain_atm: "ATM limit (2,500) & ATM fees are applied correctly.",
+    best_explain_card: "Credit card stays in the comparison — incl. FX fee.",
+    best_explain_transfer: "Transfer/Wise in the comparison — no ATM fee/limit.",
+    saving_pay: (eur) => `💰 You save ${eur} EUR vs the next best option`,
+    saving_have: (brl) => `💰 You get ${brl} more BRL vs the next best option`,
+    optName: "Name",
+    optType: "Type",
+    type_atm: "ATM (cash)",
+    type_transfer: "Transfer / Wise",
+    type_card: "Credit card",
+    optRate: "Rate (1 EUR = X BRL)",
+    optBank: "Bank fee % (optional)",
+    optFixBRL: "Fixed fee (BRL) (optional)",
+    optFixEUR: "Fixed fee (EUR) (optional)",
+    optAtmFee: "ATM fee per withdrawal (BRL)",
+    optAtmLimit: "ATM limit per withdrawal (BRL)",
+    optFx: "Card FX fee (%)",
+    optHintCard: "Card: EUR = BRL ÷ rate × (1+bank%) × (1+FX)",
+    optInfo_atm: "ATM: limit & fee per withdrawal (e.g. 5,000 BRL → 2 withdrawals).",
+    optInfo_card: "Credit card stays in the comparison — incl. FX fee.",
+    optInfo_transfer: "Transfer/Wise: no withdrawals/ATM fees, rate + fees only.",
+    mustKeepOne: "At least 1 route must remain.",
+    reset: "🔄 Reset everything",
+    resetHint: "Resets values, routes & language (clears all saved data).",
+    resetConfirm: "Do you really want to reset everything?\nAll saved data will be lost."
+  },
+  pt: {
+    title: "BRL↔EUR – rota mais barata em €",
+    mPayBRL: "Preciso pagar em BRL",
+    mHaveEUR: "Tenho EUR sobrando",
+    lblBRL_pay: "Valor em BRL (ex.: 360)",
+    lblEUR_pay: "Valor em EUR (calculado)",
+    lblBRL_have: "Valor em BRL (calculado)",
+    lblEUR_have: "Valor em EUR (ex.: 150)",
+    hint_pay: "Digite o valor em BRL — eu ranqueio pelo menor custo em EUR (melhor→pior).",
+    hint_have: "Digite o valor em EUR — eu ranqueio por mais BRL recebido (melhor→pior).",
+    atmPill: "Limite padrão do ATM: 2.500 BRL",
+    atmPillText: " → taxa do ATM por saque (várias vezes), % do banco só 1 vez.",
+    waysTitle: "Suas rotas de pagamento",
+    waysSubtitle: "ATM / transferência / cartão — tudo no mesmo comparativo.",
+    addOption: "+ Adicionar rota",
+    bestTitle: "🏆 Melhor opção",
+    thWay: "Rota",
+    thWithdrawals: "Saques",
+    thResult_pay: "Custo (EUR)",
+    thResult_have: "BRL recebido",
+    thEffective_pay: "Efetivo (BRL/EUR)",
+    thEffective_have: "Efetivo (BRL/EUR)",
+    note_pay: "Comparação: para seu valor em BRL → qual rota custa menos EUR?",
+    note_have: "Comparação: para seu valor em EUR → qual rota rende mais BRL?",
+    best_costFor: "Custo para",
+    best_is: "é",
+    best_for: "Para",
+    best_get: "você recebe",
+    best_explain_atm: "Limite do ATM (2.500) e taxas por saque aplicadas corretamente.",
+    best_explain_card: "Cartão fica no comparativo — com taxa FX.",
+    best_explain_transfer: "Transferência/Wise no comparativo — sem taxa/limite de ATM.",
+    saving_pay: (eur) => `💰 Você economiza ${eur} EUR vs a próxima melhor opção`,
+    saving_have: (brl) => `💰 Você recebe ${brl} BRL a mais vs a próxima melhor opção`,
+    optName: "Nome",
+    optType: "Tipo",
+    type_atm: "ATM (dinheiro)",
+    type_transfer: "Transferência / Wise",
+    type_card: "Cartão de crédito",
+    optRate: "Câmbio (1 EUR = X BRL)",
+    optBank: "Taxa do banco % (opcional)",
+    optFixBRL: "Taxa fixa (BRL) (opcional)",
+    optFixEUR: "Taxa fixa (EUR) (opcional)",
+    optAtmFee: "Taxa do ATM por saque (BRL)",
+    optAtmLimit: "Limite do ATM por saque (BRL)",
+    optFx: "Taxa FX do cartão (%)",
+    optHintCard: "Cartão: EUR = BRL ÷ câmbio × (1+taxa banco) × (1+FX)",
+    optInfo_atm: "ATM: limite & taxa por saque (ex.: 5.000 BRL → 2 saques).",
+    optInfo_card: "Cartão fica no comparativo — com taxa FX.",
+    optInfo_transfer: "Transferência/Wise: sem saques/taxas de ATM, só câmbio + taxas.",
+    mustKeepOne: "Pelo menos 1 rota deve permanecer.",
+    reset: "🔄 Redefinir tudo",
+    resetHint: "Redefine valores, rotas e idioma (apaga dados salvos).",
+    resetConfirm: "Deseja realmente redefinir tudo?\nTodos os dados salvos serão apagados."
+  }
+};
+function t(key){
+  const lang = state.lang || "de";
+  const pack = I18N[lang] || I18N.de;
+  return pack[key] ?? I18N.de[key] ?? key;
+}
 
-/* -------------------------
-   Default state
-   option.type: "atm" | "transfer" | "card"
-------------------------- */
-let state = {
-  mode: "pay_brl",       // pay_brl | have_eur
+/* =========================
+   Storage / Defaults
+========================= */
+const STORE_KEY = "brl_eur_bestway_full_v1";
+
+const DEFAULT_STATE = {
+  lang: "de",
+  mode: "pay_brl", // pay_brl | have_eur
   brl: 360,
   eur: 0,
   options: [
-    // ATM: 2.500 limit, fee per withdrawal
-    { id: crypto.randomUUID(), name: "N26 · ATM", type: "atm", rate: 6.36, bankPct: 1.70, atmFeeBRL: 25, atmLimitBRL: 2500, fixedFeeBRL: 0, fixedFeeEUR: 0, cardFxPct: 0 },
-    // Transfer: no ATM logic, just rate + bank%
-    { id: crypto.randomUUID(), name: "Wise", type: "transfer", rate: 6.20, bankPct: 0.00, atmFeeBRL: 0, atmLimitBRL: 999999999, fixedFeeBRL: 0, fixedFeeEUR: 0, cardFxPct: 0 },
-    // Card: uses FX fee (default 1.55)
-    { id: crypto.randomUUID(), name: "Kreditkarte", type: "card", rate: 6.30, bankPct: 0.00, atmFeeBRL: 0, atmLimitBRL: 999999999, fixedFeeBRL: 0, fixedFeeEUR: 0, cardFxPct: 1.55 }
+    { id: crypto.randomUUID(), name: "N26 · ATM", type: "atm", favorite: true,  rate: 6.36, bankPct: 1.70, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 25, atmLimitBRL: 2500, cardFxPct: 0 },
+    { id: crypto.randomUUID(), name: "Wise",      type: "transfer", favorite: false, rate: 6.20, bankPct: 0.00, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 0,  atmLimitBRL: 999999999, cardFxPct: 0 },
+    { id: crypto.randomUUID(), name: "Kreditkarte", type: "card", favorite: false, rate: 6.30, bankPct: 0.00, fixedFeeBRL: 0, fixedFeeEUR: 0, atmFeeBRL: 0,  atmLimitBRL: 999999999, cardFxPct: 1.55 }
   ]
 };
+
+let state = structuredClone(DEFAULT_STATE);
 
 function loadState(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
     if(!raw) return;
     const parsed = JSON.parse(raw);
-    if(parsed && parsed.options && Array.isArray(parsed.options)){
-      state = parsed;
+    if(!parsed || !Array.isArray(parsed.options)) return;
+
+    // minimal validation/merge
+    state = {
+      ...structuredClone(DEFAULT_STATE),
+      ...parsed,
+      options: parsed.options.map(o => ({
+        id: o.id || crypto.randomUUID(),
+        name: String(o.name ?? "Option"),
+        type: (["atm","transfer","card"].includes(o.type) ? o.type : "atm"),
+        favorite: !!o.favorite,
+        rate: Number(o.rate ?? 0),
+        bankPct: Number(o.bankPct ?? 0),
+        fixedFeeBRL: Number(o.fixedFeeBRL ?? 0),
+        fixedFeeEUR: Number(o.fixedFeeEUR ?? 0),
+        atmFeeBRL: Number(o.atmFeeBRL ?? 0),
+        atmLimitBRL: Number(o.atmLimitBRL ?? 2500),
+        cardFxPct: Number(o.cardFxPct ?? 0),
+      }))
+    };
+
+    // ensure exactly one favorite if any exist
+    if(!state.options.some(o=>o.favorite) && state.options.length){
+      state.options[0].favorite = true;
     }
   }catch(e){}
 }
@@ -214,23 +457,113 @@ function saveState(){
 }
 loadState();
 
-/* -------------------------
+/* =========================
    Helpers
-------------------------- */
+========================= */
 const $ = (id)=>document.getElementById(id);
 function num(v, fallback=0){
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
 function clampMin(v, min){ return v < min ? min : v; }
-function fmt2(n){ return (Number.isFinite(n) ? n.toFixed(2) : "–"); }
-function fmt0(n){ return (Number.isFinite(n) ? String(Math.round(n)) : "–"); }
+function fmt2(n){ return Number.isFinite(n) ? n.toFixed(2) : "–"; }
+function fmt0(n){ return Number.isFinite(n) ? String(Math.round(n)) : "–"; }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
 
-/* -------------------------
-   UI wiring
-------------------------- */
-const inBRL = $("inBRL");
-const inEUR = $("inEUR");
+/* =========================
+   Calculations
+   Goal A (pay_brl): compute EUR cost for given BRL
+   Goal B (have_eur): compute BRL received for given EUR budget
+========================= */
+function computePayBRL(brl, o){
+  const rate = num(o.rate, 0);
+  if(rate <= 0) return { eurCost: NaN, withdrawals: 0 };
+
+  const bankMul = 1 + num(o.bankPct, 0)/100;
+  const fixedBRL = num(o.fixedFeeBRL, 0);
+  const fixedEUR = num(o.fixedFeeEUR, 0);
+
+  let withdrawals = 0;
+  let brlFees = fixedBRL;
+
+  if(o.type === "atm"){
+    const limit = clampMin(num(o.atmLimitBRL, 2500), 1);
+    withdrawals = Math.ceil(brl / limit);
+    brlFees += withdrawals * num(o.atmFeeBRL, 0);
+  }
+
+  let eur = ((brl + brlFees) / rate) + fixedEUR;
+  eur = eur * bankMul;
+
+  if(o.type === "card"){
+    eur = eur * (1 + num(o.cardFxPct, 1.55)/100);
+  }
+
+  return { eurCost: eur, withdrawals };
+}
+
+function computeHaveEUR(eurBudget, o){
+  const rate = num(o.rate, 0);
+  if(rate <= 0) return { brlOut: NaN, withdrawals: 0 };
+
+  const bankMul = 1 + num(o.bankPct, 0)/100;
+  const fixedBRL = num(o.fixedFeeBRL, 0);
+  const fixedEUR = num(o.fixedFeeEUR, 0);
+
+  let eurNet = eurBudget - fixedEUR;
+  if(eurNet < 0) eurNet = 0;
+
+  let extraMul = bankMul;
+  if(o.type === "card"){
+    extraMul = extraMul * (1 + num(o.cardFxPct, 1.55)/100);
+  }
+
+  if(o.type !== "atm"){
+    const brl = (eurNet * rate) / extraMul - fixedBRL;
+    return { brlOut: Math.max(0, brl), withdrawals: 0 };
+  }
+
+  // ATM: choose best n withdrawals (1..30) because cap depends on n * limit and fees depend on n
+  const limit = clampMin(num(o.atmLimitBRL, 2500), 1);
+  const atmFee = num(o.atmFeeBRL, 0);
+
+  let bestBRL = 0;
+  let bestN = 1;
+
+  const eurBeforePct = eurNet / extraMul;
+
+  for(let n=1; n<=30; n++){
+    const brlPossible = eurBeforePct * rate - fixedBRL - n * atmFee;
+    const brlCapped = Math.max(0, Math.min(brlPossible, n * limit));
+    if(brlCapped > bestBRL){
+      bestBRL = brlCapped;
+      bestN = n;
+    }
+  }
+
+  return { brlOut: bestBRL, withdrawals: bestN };
+}
+
+/* =========================
+   UI text & mode
+========================= */
+function applyLanguage(){
+  $("title").textContent = t("title");
+  $("mPayBRL").textContent = t("mPayBRL");
+  $("mHaveEUR").textContent = t("mHaveEUR");
+  $("atmPill").textContent = t("atmPill");
+  $("atmPillText").textContent = t("atmPillText");
+  $("waysTitle").textContent = t("waysTitle");
+  $("waysSubtitle").textContent = t("waysSubtitle");
+  $("addOption").textContent = t("addOption");
+  $("bestTitle").textContent = t("bestTitle");
+  $("thWay").textContent = t("thWay");
+  $("thWithdrawals").textContent = t("thWithdrawals");
+  $("resetApp").textContent = t("reset");
+  $("resetHint").textContent = t("resetHint");
+}
 
 function setMode(mode){
   state.mode = mode;
@@ -238,148 +571,165 @@ function setMode(mode){
   $("mPayBRL").classList.toggle("active", pay);
   $("mHaveEUR").classList.toggle("active", !pay);
 
+  const inBRL = $("inBRL");
+  const inEUR = $("inEUR");
+
   if(pay){
-    $("lblBRL").textContent = "BRL Betrag (z. B. 360)";
-    $("lblEUR").textContent = "EUR Betrag (z. B. 150)";
+    $("lblBRL").textContent = t("lblBRL_pay");
+    $("lblEUR").textContent = t("lblEUR_pay");
+    $("modeHint").textContent = t("hint_pay");
+    $("thResult").textContent = t("thResult_pay");
+    $("thEffective").textContent = t("thEffective_pay");
+    $("tableNote").textContent = t("note_pay");
+
     inBRL.classList.remove("inactive");
     inEUR.classList.add("inactive");
+
+    // keep only BRL active
     state.eur = 0;
     inEUR.value = 0;
-    $("colWithdrawals").textContent = "Abhebungen";
-    $("colResult").textContent = "Kosten (EUR)";
-    $("modeHint").textContent = "Du gibst den BRL-Betrag ein – ich berechne, welcher Zahlungsweg dich am wenigsten EUR kostet.";
+
   } else {
-    $("lblBRL").textContent = "BRL Betrag (wird berechnet)";
-    $("lblEUR").textContent = "EUR Betrag (z. B. 150)";
+    $("lblBRL").textContent = t("lblBRL_have");
+    $("lblEUR").textContent = t("lblEUR_have");
+    $("modeHint").textContent = t("hint_have");
+    $("thResult").textContent = t("thResult_have");
+    $("thEffective").textContent = t("thEffective_have");
+    $("tableNote").textContent = t("note_have");
+
     inBRL.classList.add("inactive");
     inEUR.classList.remove("inactive");
+
+    // keep only EUR active
     state.brl = 0;
     inBRL.value = 0;
-    $("colWithdrawals").textContent = "Abhebungen";
-    $("colResult").textContent = "BRL verfügbar";
-    $("modeHint").textContent = "Du gibst den EUR-Betrag ein – ich berechne, womit du am meisten BRL bekommst (Best→Worst).";
   }
+
   saveState();
   render();
 }
 
-$("mPayBRL").onclick = ()=>setMode("pay_brl");
-$("mHaveEUR").onclick = ()=>setMode("have_eur");
-
-inBRL.value = num(state.brl, 360);
-inEUR.value = num(state.eur, 0);
-
-inBRL.oninput = ()=>{
-  state.brl = num(inBRL.value, 0);
-  saveState();
-  render();
-};
-inEUR.oninput = ()=>{
-  state.eur = num(inEUR.value, 0);
-  saveState();
-  render();
-};
-
-/* -------------------------
-   Option rendering (editable + add/remove)
-------------------------- */
+/* =========================
+   Options (editor + add/remove + favorite)
+========================= */
 function optionTemplate(o){
-  // Show/Hide by type
   const showATM = (o.type === "atm");
   const showCard = (o.type === "card");
 
+  const favClass = o.favorite ? "favOn" : "favOff";
+
   return `
     <div class="card" data-id="${o.id}">
-      <div class="optionTitle">
+      <div class="optHeader">
         <div class="nameWrap">
-          <label>Name</label>
-          <input class="opt-name" type="text" value="${escapeHtml(o.name)}"/>
+          <label>${t("optName")}</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="opt-name" type="text" value="${escapeHtml(o.name)}" />
+            <button class="favBtn ${favClass} opt-fav" title="Favorite">★</button>
+          </div>
         </div>
-        <div style="min-width:200px">
-          <label>Typ</label>
+
+        <div style="min-width:220px">
+          <label>${t("optType")}</label>
           <select class="opt-type">
-            <option value="atm" ${o.type==="atm"?"selected":""}>ATM (Bargeld)</option>
-            <option value="transfer" ${o.type==="transfer"?"selected":""}>Transfer / Wise</option>
-            <option value="card" ${o.type==="card"?"selected":""}>Kreditkarte</option>
+            <option value="atm" ${o.type==="atm"?"selected":""}>${t("type_atm")}</option>
+            <option value="transfer" ${o.type==="transfer"?"selected":""}>${t("type_transfer")}</option>
+            <option value="card" ${o.type==="card"?"selected":""}>${t("type_card")}</option>
           </select>
         </div>
-        <button class="btn btnDanger opt-del" title="Löschen">🗑️</button>
+
+        <button class="btn btnDanger opt-del" title="Delete">🗑️</button>
       </div>
 
       <div class="grid">
         <div>
-          <label>Kurs (1 EUR = X BRL)</label>
+          <label>${t("optRate")}</label>
           <input class="opt-rate" type="number" step="0.0001" value="${o.rate}">
         </div>
         <div>
-          <label>Bankgebühr % (optional)</label>
+          <label>${t("optBank")}</label>
           <input class="opt-bank" type="number" step="0.01" value="${o.bankPct}">
         </div>
       </div>
 
       <div class="grid" style="margin-top:6px">
         <div>
-          <label>Fixe Gebühr (BRL) (optional)</label>
+          <label>${t("optFixBRL")}</label>
           <input class="opt-fixbrl" type="number" step="0.01" value="${o.fixedFeeBRL}">
         </div>
         <div>
-          <label>Fixe Gebühr (EUR) (optional)</label>
+          <label>${t("optFixEUR")}</label>
           <input class="opt-fixeur" type="number" step="0.01" value="${o.fixedFeeEUR}">
         </div>
       </div>
 
       <div class="grid" style="margin-top:6px">
-        <div style="${showATM?'':'display:none'}" class="atm-only">
-          <label>ATM Gebühr pro Abhebung (BRL)</label>
+        <div class="atm-only" style="${showATM?'':'display:none'}">
+          <label>${t("optAtmFee")}</label>
           <input class="opt-atmfee" type="number" step="0.01" value="${o.atmFeeBRL}">
         </div>
-        <div style="${showATM?'':'display:none'}" class="atm-only">
-          <label>ATM Limit pro Abhebung (BRL)</label>
+        <div class="atm-only" style="${showATM?'':'display:none'}">
+          <label>${t("optAtmLimit")}</label>
           <input class="opt-atmlimit" type="number" step="1" value="${o.atmLimitBRL}">
         </div>
 
-        <div style="${showCard?'':'display:none'}" class="card-only">
-          <label>FX-Gebühr Kreditkarte (%)</label>
+        <div class="card-only" style="${showCard?'':'display:none'}">
+          <label>${t("optFx")}</label>
           <input class="opt-fx" type="number" step="0.01" value="${o.cardFxPct}">
         </div>
-        <div style="${showCard?'':'display:none'}" class="card-only">
-          <label>Hinweis</label>
-          <div class="small" style="padding:10px;border-radius:12px;border:1px solid var(--border);background:#f8fafc">
-            Karte: EUR = BRL ÷ Kurs × (1+Bank%) × (1+FX)
-          </div>
+        <div class="card-only" style="${showCard?'':'display:none'}">
+          <label>Hint</label>
+          <div class="miniInfo small">${t("optHintCard")}</div>
         </div>
       </div>
 
       <div class="small" style="margin-top:10px">
-        ${o.type==="atm" ? "ATM: Limit & Abhebungsgebühr werden automatisch mehrfach berücksichtigt (z. B. 5.000 BRL → 2 Abhebungen)." :
-          o.type==="card" ? "Kreditkarte bleibt im Vergleich – inklusive 1,55% (oder deiner Eingabe) FX-Gebühr." :
-          "Transfer/Wise: keine Abhebungen/ATM-Gebühren, nur Kurs + Gebühren."}
+        ${o.type==="atm" ? t("optInfo_atm") : o.type==="card" ? t("optInfo_card") : t("optInfo_transfer")}
       </div>
     </div>
   `;
 }
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-}
-
 function renderOptions(){
   $("options").innerHTML = state.options.map(optionTemplate).join("");
 
-  // bind events
   state.options.forEach(o=>{
     const card = document.querySelector(`div[data-id="${CSS.escape(o.id)}"]`);
     if(!card) return;
 
     const q = (cls)=>card.querySelector(cls);
 
+    // favorite
+    q(".opt-fav").onclick = ()=>{
+      state.options.forEach(x=>x.favorite=false);
+      o.favorite = true;
+      saveState();
+      render();
+    };
+
+    // delete
+    q(".opt-del").onclick = ()=>{
+      if(state.options.length <= 1){
+        alert(t("mustKeepOne"));
+        return;
+      }
+      state.options = state.options.filter(x=>x.id !== o.id);
+      if(!state.options.some(x=>x.favorite) && state.options.length){
+        state.options[0].favorite = true;
+      }
+      saveState();
+      render();
+    };
+
+    // edits
     q(".opt-name").oninput = (e)=>{ o.name = e.target.value; saveState(); render(); };
+
     q(".opt-type").onchange = (e)=>{
       o.type = e.target.value;
 
-      // sensible defaults when switching types (keeps it user-friendly)
+      // user-friendly defaults when switching type
       if(o.type === "atm"){
-        o.atmLimitBRL = num(o.atmLimitBRL, 2500) || 2500;
+        o.atmLimitBRL = clampMin(num(o.atmLimitBRL, 2500), 1);
         o.atmFeeBRL = num(o.atmFeeBRL, 25);
         o.cardFxPct = 0;
       }
@@ -411,242 +761,210 @@ function renderOptions(){
 
     const fx = q(".opt-fx");
     if(fx) fx.oninput = (e)=>{ o.cardFxPct = num(e.target.value, o.cardFxPct); saveState(); render(); };
-
-    q(".opt-del").onclick = ()=>{
-      if(state.options.length <= 1){
-        alert("Mindestens 1 Zahlungsweg muss bleiben.");
-        return;
-      }
-      state.options = state.options.filter(x=>x.id !== o.id);
-      saveState();
-      render();
-    };
   });
 }
 
 $("addOption").onclick = ()=>{
-  // Add a new ATM option by default (most common)
   state.options.push({
     id: crypto.randomUUID(),
-    name: "Neue Option",
+    name: state.lang==="en" ? "New option" : state.lang==="pt" ? "Nova opção" : "Neue Option",
     type: "atm",
+    favorite: false,
     rate: 6.30,
     bankPct: 0,
-    atmFeeBRL: 25,
-    atmLimitBRL: 2500,
     fixedFeeBRL: 0,
     fixedFeeEUR: 0,
+    atmFeeBRL: 25,
+    atmLimitBRL: 2500,
     cardFxPct: 0
   });
   saveState();
   render();
 };
 
-/* -------------------------
-   Core calculations
-   Always compare inside one list → Best to Worst
-------------------------- */
-function computePayBRL(brl, o){
-  // returns {eurCost, withdrawals}
-  const rate = num(o.rate, 0);
-  if(rate <= 0) return { eurCost: NaN, withdrawals: 0 };
-
-  const bankMul = 1 + num(o.bankPct, 0)/100;
-  const fixedBRL = num(o.fixedFeeBRL, 0);
-  const fixedEUR = num(o.fixedFeeEUR, 0);
-
-  let withdrawals = 0;
-  let brlFees = fixedBRL;
-
-  if(o.type === "atm"){
-    const limit = clampMin(num(o.atmLimitBRL, 2500), 1);
-    withdrawals = Math.ceil(brl / limit);
-    brlFees += withdrawals * num(o.atmFeeBRL, 0);
-  } else {
-    withdrawals = 0;
-    // transfer/card: no ATM fees by default
-  }
-
-  let eur = ((brl + brlFees) / rate) + fixedEUR;
-  eur = eur * bankMul;
-
-  if(o.type === "card"){
-    const fxMul = 1 + num(o.cardFxPct, 1.55)/100;
-    eur = eur * fxMul;
-  }
-  return { eurCost: eur, withdrawals };
-}
-
-function computeHaveEUR(eurBudget, o){
-  // returns {brlOut, withdrawals}
-  const rate = num(o.rate, 0);
-  if(rate <= 0) return { brlOut: NaN, withdrawals: 0 };
-
-  const bankMul = 1 + num(o.bankPct, 0)/100;
-  const fixedBRL = num(o.fixedFeeBRL, 0);
-  const fixedEUR = num(o.fixedFeeEUR, 0);
-
-  // available EUR after fixed EUR fees
-  let eurNet = eurBudget - fixedEUR;
-  if(eurNet < 0) eurNet = 0;
-
-  // card adds FX cost multiplier
-  let extraMul = bankMul;
-  if(o.type === "card"){
-    extraMul = extraMul * (1 + num(o.cardFxPct, 1.55)/100);
-  }
-
-  if(o.type !== "atm"){
-    // transfer/card: no withdrawal iteration needed
-    const brl = (eurNet * rate) / extraMul - fixedBRL;
-    return { brlOut: Math.max(0, brl), withdrawals: 0 };
-  }
-
-  // ATM: choose best number of withdrawals (1..30) because fees+cap depend on n
-  const limit = clampMin(num(o.atmLimitBRL, 2500), 1);
-  const atmFee = num(o.atmFeeBRL, 0);
-
-  let bestBRL = 0;
-  let bestN = 1;
-
-  // EUR before % fees:
-  const eurBeforePct = eurNet / extraMul; // remove bank% (and fx if card, but atm isn't card anyway)
-
-  for(let n=1; n<=30; n++){
-    // total BRL purchasable before caps, after ATM fees and fixed BRL fee
-    const brlPossible = eurBeforePct * rate - fixedBRL - n * atmFee;
-    const brlCapped = Math.max(0, Math.min(brlPossible, n * limit));
-    if(brlCapped > bestBRL){
-      bestBRL = brlCapped;
-      bestN = n;
-    }
-  }
-  return { brlOut: bestBRL, withdrawals: bestN };
-}
-
-/* -------------------------
-   Render results
-------------------------- */
+/* =========================
+   Render results (Best→Worst) + savings vs 2nd
+========================= */
 function render(){
-  // keep inputs synced
+  applyLanguage();
+
+  // sync language selector
+  $("lang").value = state.lang || "de";
+
+  // inputs
+  const inBRL = $("inBRL");
+  const inEUR = $("inEUR");
+
   if(state.mode === "pay_brl"){
     inBRL.value = num(state.brl, 0);
     inEUR.value = 0;
+    inBRL.classList.remove("inactive");
+    inEUR.classList.add("inactive");
   } else {
     inEUR.value = num(state.eur, 0);
     inBRL.value = 0;
+    inBRL.classList.add("inactive");
+    inEUR.classList.remove("inactive");
   }
+
+  // text per mode
+  $("mPayBRL").classList.toggle("active", state.mode==="pay_brl");
+  $("mHaveEUR").classList.toggle("active", state.mode==="have_eur");
+
+  $("lblBRL").textContent = state.mode==="pay_brl" ? t("lblBRL_pay") : t("lblBRL_have");
+  $("lblEUR").textContent = state.mode==="pay_brl" ? t("lblEUR_pay") : t("lblEUR_have");
+  $("modeHint").textContent = state.mode==="pay_brl" ? t("hint_pay") : t("hint_have");
+  $("thResult").textContent = state.mode==="pay_brl" ? t("thResult_pay") : t("thResult_have");
+  $("thEffective").textContent = state.mode==="pay_brl" ? t("thEffective_pay") : t("thEffective_have");
+  $("tableNote").textContent = state.mode==="pay_brl" ? t("note_pay") : t("note_have");
 
   renderOptions();
 
-  const mode = state.mode;
-  const brl = num(state.brl, 0);
-  const eur = num(state.eur, 0);
+  const savingBox = $("savingBox");
+  savingBox.style.display = "none";
 
   let rows = [];
+  if(state.mode === "pay_brl"){
+    const brl = num(state.brl, 0);
 
-  if(mode === "pay_brl"){
-    $("tableNote").textContent = "Vergleich: Für deinen BRL-Betrag → welche Option kostet dich am wenigsten EUR?";
-    $("colResult").textContent = "Kosten (EUR)";
-    state.options.forEach(o=>{
+    rows = state.options.map(o=>{
       const r = computePayBRL(brl, o);
       const eurCost = r.eurCost;
-      const eff = brl / eurCost; // BRL pro EUR (höher = besser)
-      rows.push({
-        name: o.name,
-        type: o.type,
-        withdrawals: (o.type==="atm" ? r.withdrawals : "–"),
+      const eff = brl / eurCost; // BRL per EUR
+      return {
+        id:o.id, name:o.name, type:o.type, favorite:o.favorite,
+        withdrawals: (o.type==="atm" ? r.withdrawals : null),
         main: eurCost,
         eff
-      });
-    });
-    rows.sort((a,b)=>(b.eff||0)-(a.eff||0));
+      };
+    }).sort((a,b)=>(b.eff||0)-(a.eff||0));
 
+    // table
     $("resultRows").innerHTML = rows.map((r,i)=>`
       <tr class="${i===0?'best':''}">
-        <td>${escapeHtml(r.name)}${i===0?'<span class="badge">BEST</span>':''}</td>
-        <td>${r.withdrawals}</td>
+        <td>${escapeHtml(r.name)}${r.favorite?' ⭐':''}${i===0?'<span class="badge">BEST</span>':''}</td>
+        <td>${r.withdrawals===null ? '–' : r.withdrawals}</td>
         <td>${fmt2(r.main)} EUR</td>
-        <td>${(r.eff||0).toFixed(3)} BRL/EUR</td>
+        <td>${(r.eff||0).toFixed(3)}</td>
       </tr>
     `).join("");
 
+    // best box
     const bestRow = rows[0];
     $("bestBox").innerHTML = `
       <div><b>${escapeHtml(bestRow.name)}</b></div>
-      <div style="margin-top:6px">Kosten für <b>${fmt0(brl)} BRL</b>: <b>${fmt2(bestRow.main)} EUR</b></div>
+      <div style="margin-top:6px">${t("best_costFor")} <b>${fmt0(brl)} BRL</b> ${t("best_is")}: <b>${fmt2(bestRow.main)} EUR</b></div>
     `;
     $("bestExplain").textContent =
-      bestRow.type === "atm"
-        ? "ATM-Limit (2.500) & Abhebungsgebühr wurden automatisch korrekt berücksichtigt."
-        : bestRow.type === "card"
-          ? "Kreditkarte ist im Vergleich – inkl. Fremdwährungsgebühr."
-          : "Transfer/Wise im Vergleich – ohne ATM-Gebühr/Limit.";
+      bestRow.type === "atm" ? t("best_explain_atm") :
+      bestRow.type === "card" ? t("best_explain_card") : t("best_explain_transfer");
+
+    // savings vs 2nd
+    if(rows.length > 1){
+      const saveEUR = rows[1].main - rows[0].main;
+      if(Number.isFinite(saveEUR) && saveEUR > 0.00001){
+        savingBox.style.display = "block";
+        savingBox.textContent = I18N[state.lang]?.saving_pay
+          ? I18N[state.lang].saving_pay(saveEUR.toFixed(2))
+          : I18N.de.saving_pay(saveEUR.toFixed(2));
+      }
+    }
 
   } else {
-    $("tableNote").textContent = "Vergleich: Für deinen EUR-Betrag → womit bekommst du am meisten BRL?";
-    $("colResult").textContent = "BRL verfügbar";
-    state.options.forEach(o=>{
+    const eur = num(state.eur, 0);
+
+    rows = state.options.map(o=>{
       const r = computeHaveEUR(eur, o);
       const brlOut = r.brlOut;
-      const eff = brlOut / eur; // BRL pro EUR (höher = besser)
-      rows.push({
-        name: o.name,
-        type: o.type,
-        withdrawals: (o.type==="atm" ? r.withdrawals : "–"),
+      const eff = eur > 0 ? (brlOut / eur) : 0;
+      return {
+        id:o.id, name:o.name, type:o.type, favorite:o.favorite,
+        withdrawals: (o.type==="atm" ? r.withdrawals : null),
         main: brlOut,
         eff
-      });
-    });
-    rows.sort((a,b)=>(b.eff||0)-(a.eff||0));
+      };
+    }).sort((a,b)=>(b.eff||0)-(a.eff||0));
 
     $("resultRows").innerHTML = rows.map((r,i)=>`
       <tr class="${i===0?'best':''}">
-        <td>${escapeHtml(r.name)}${i===0?'<span class="badge">BEST</span>':''}</td>
-        <td>${r.withdrawals}</td>
+        <td>${escapeHtml(r.name)}${r.favorite?' ⭐':''}${i===0?'<span class="badge">BEST</span>':''}</td>
+        <td>${r.withdrawals===null ? '–' : r.withdrawals}</td>
         <td>${fmt0(r.main)} BRL</td>
-        <td>${(r.eff||0).toFixed(3)} BRL/EUR</td>
+        <td>${(r.eff||0).toFixed(3)}</td>
       </tr>
     `).join("");
 
     const bestRow = rows[0];
     $("bestBox").innerHTML = `
       <div><b>${escapeHtml(bestRow.name)}</b></div>
-      <div style="margin-top:6px">Für <b>${fmt2(eur)} EUR</b> bekommst du: <b>${fmt0(bestRow.main)} BRL</b></div>
+      <div style="margin-top:6px">${t("best_for")} <b>${fmt2(eur)} EUR</b> ${t("best_get")}: <b>${fmt0(bestRow.main)} BRL</b></div>
     `;
     $("bestExplain").textContent =
-      bestRow.type === "atm"
-        ? "ATM-Limit (2.500) & Abhebungsgebühr wurden automatisch korrekt berücksichtigt."
-        : bestRow.type === "card"
-          ? "Kreditkarte im Vergleich – inkl. Fremdwährungsgebühr."
-          : "Transfer/Wise im Vergleich – ohne ATM-Gebühr/Limit.";
+      bestRow.type === "atm" ? t("best_explain_atm") :
+      bestRow.type === "card" ? t("best_explain_card") : t("best_explain_transfer");
+
+    if(rows.length > 1){
+      const moreBRL = rows[0].main - rows[1].main;
+      if(Number.isFinite(moreBRL) && moreBRL > 0.5){
+        savingBox.style.display = "block";
+        savingBox.textContent = I18N[state.lang]?.saving_have
+          ? I18N[state.lang].saving_have(String(Math.round(moreBRL)))
+          : I18N.de.saving_have(String(Math.round(moreBRL)));
+      }
+    }
   }
 
   saveState();
 }
 
-/* -------------------------
-   init
-------------------------- */
-function init(){
-  // restore mode + UI
-  if(state.mode !== "pay_brl" && state.mode !== "have_eur") state.mode = "pay_brl";
-  $("mPayBRL").classList.toggle("active", state.mode==="pay_brl");
-  $("mHaveEUR").classList.toggle("active", state.mode==="have_eur");
-
-  if(state.mode==="pay_brl"){
-    inBRL.classList.remove("inactive");
-    inEUR.classList.add("inactive");
-    inBRL.value = num(state.brl, 360);
-    inEUR.value = 0;
-  } else {
-    inBRL.classList.add("inactive");
-    inEUR.classList.remove("inactive");
-    inEUR.value = num(state.eur, 150);
-    inBRL.value = 0;
-  }
-
+/* =========================
+   Events
+========================= */
+$("lang").onchange = (e)=>{
+  state.lang = e.target.value;
+  saveState();
   render();
+};
+
+$("mPayBRL").onclick = ()=>setMode("pay_brl");
+$("mHaveEUR").onclick = ()=>setMode("have_eur");
+
+$("inBRL").oninput = ()=>{
+  state.brl = num($("inBRL").value, 0);
+  saveState();
+  render();
+};
+
+$("inEUR").oninput = ()=>{
+  state.eur = num($("inEUR").value, 0);
+  saveState();
+  render();
+};
+
+$("resetApp").onclick = ()=>{
+  const msg = t("resetConfirm");
+  if(!confirm(msg)) return;
+  localStorage.removeItem(STORE_KEY);
+  state = structuredClone(DEFAULT_STATE);
+  saveState();
+  // force clean UI
+  render();
+};
+
+/* =========================
+   Init
+========================= */
+function init(){
+  if(!["de","en","pt"].includes(state.lang)) state.lang = "de";
+  if(!["pay_brl","have_eur"].includes(state.mode)) state.mode = "pay_brl";
+
+  // inputs initial
+  $("inBRL").value = num(state.brl, 360);
+  $("inEUR").value = num(state.eur, 150);
+
+  // mode UI (and render)
+  applyLanguage();
+  setMode(state.mode);
 }
 init();
 </script>
